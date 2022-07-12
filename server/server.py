@@ -1,14 +1,23 @@
 import socket
 import threading
 import os
+import pyautogui
 
 # Commands
 CMD_SHUTDOWN = 'shutdown'
+CMD_TAKE_SCREENSHOT = 'screenshot'
+CMD_SENDIMAGE = 'send_image'
+
+# BUFFER
+BUFFER_SIZE = 1024
+
+# SCREENSHOT
+SCREENSHOT_PATH = './screenshots/'
 
 
 class Server:
   def __init__(self):
-    self.host = '127.0.0.1'
+    self.host = '127.0.0.2'
     self.port = 5000
     self.addr = (self.host, self.port)
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -29,11 +38,14 @@ class Server:
     connected = True
 
     while connected:
-      data = conn.recv(1024)
+      data = conn.recv(BUFFER_SIZE)
 
       if data == CMD_SHUTDOWN.encode():
         self.shutdown(conn, addr)
 
+      elif data == CMD_TAKE_SCREENSHOT.encode():
+        self.take_screenshot()
+        self.send_image(os.path.join(SCREENSHOT_PATH, 'screenshot.png'), conn)
 
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
@@ -44,3 +56,21 @@ class Server:
     os.system('shutdown -s -t 0')
     conn.close()
     exit()
+  
+  def take_screenshot(self):
+    screenshot = pyautogui.screenshot()
+    screenshot.save(os.path.join(SCREENSHOT_PATH, 'screenshot.png'))
+  
+  def send_image(self, path, conn):
+    if os.path.exists(path):
+      f = open(path, 'rb')
+      bytes = f.read(BUFFER_SIZE)
+      while bytes:
+        conn.send(bytes)
+        bytes = f.read(BUFFER_SIZE)
+      
+      f.close()
+
+
+
+  
