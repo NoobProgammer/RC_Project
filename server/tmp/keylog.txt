@@ -1,0 +1,2 @@
+notepad
+<shift>Dang chay key loggerKey.ctrl_l\x138
