@@ -19,7 +19,7 @@ SCREENSHOT_PATH = './screenshots/'
 
 class Server:
   def __init__(self):
-    self.host = socket.gethostbyname(socket.gethostname())
+    self.host = socket.gethostbyname_ex(socket.gethostname())[2][2]
     self.port = 5000
     self.addr = (self.host, self.port)
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -78,14 +78,17 @@ class Server:
       while bytes:
         conn.send(bytes)
         bytes = f.read(BUFFER_SIZE)
-      
+      time.sleep(0.05)
       f.close()
+      conn.send(b'IMAGE_END')
+
 
   def get_all_processes(self):
     return os.popen('wmic process get description, processid, threadcount').read()
 
   def kill_process(self, pid):
-    os.system(f'TASKKILL /f /PID {pid}')
+    # os.system(f'TASKKILL /f /t /PID {pid}')
+    os.popen('wmic process where processid=' + pid + ' call terminate')
 
 
 if __name__ == '__main__':
