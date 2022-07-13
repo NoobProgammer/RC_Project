@@ -2,11 +2,13 @@ import socket
 import threading
 import os
 import pyautogui
+import time
 
 # Commands
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
-CMD_SENDIMAGE = 'send_image'
+CMD_VIEW_PROCESSES = 'view_processes'
+CMD_KILL_PROCESS = 'kill_process'
 
 # BUFFER
 BUFFER_SIZE = 1024
@@ -36,7 +38,6 @@ class Server:
   def handle_client(self, conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
-
     while connected:
       data = conn.recv(BUFFER_SIZE)
 
@@ -47,16 +48,25 @@ class Server:
         self.take_screenshot()
         self.send_image(os.path.join(SCREENSHOT_PATH, 'screenshot.png'), conn)
 
+      elif data == CMD_VIEW_PROCESSES.encode():
+        processes = self.get_all_processes()
+        conn.send(processes.encode())
+        time.sleep(0.01)
+        conn.send(b'PROCESSES_END')
+
+      elif data == CMD_KILL_PROCESS.encode():
+        pid = conn.recv(BUFFER_SIZE).decode()
+        self.kill_process(pid)
+
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
 
   def shutdown(self, conn, addr):
     print(f"[SHUTDOWN] {addr} disconnected.")
     print(f'Received shutdown command. Server is shutting down.')
-    os.system('shutdown -s -t 0')
     conn.close()
-    exit()
-  
+    os.system('shutdown -s -t 0')
+    
   def take_screenshot(self):
     screenshot = pyautogui.screenshot()
     screenshot.save(os.path.join(SCREENSHOT_PATH, 'screenshot.png'))
@@ -71,6 +81,13 @@ class Server:
       
       f.close()
 
+  def get_all_processes(self):
+    return os.popen('wmic process get description, processid, threadcount').read()
+
+  def kill_process(self, pid):
+    os.system(f'TASKKILL /PID {pid}')
 
 
-  
+if __name__ == '__main__':
+  server = Server()
+  server.run()

