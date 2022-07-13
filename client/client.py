@@ -98,7 +98,6 @@ class Client:
         
     print(processes)
       
-  
   def kill_process(self, pid):
     self.socket.send(CMD_KILL_PROCESS.encode())
     time.sleep(0.01)
