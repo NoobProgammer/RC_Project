@@ -45,25 +45,29 @@ def main():
     client = Client()
     client.connect()
 
-    window = sg.Window("Remote Control", layout,
-                       no_titlebar=False, size=(720, 480))
+    window = sg.Window("Remote Control", layout, no_titlebar=False, size=(720, 480))
 
     while True:
-
+        
         event, value = window.read()
 
         if event == "Exit" or event == sg.WIN_CLOSED:
+            client.end_connection()
             break
+
+
         elif event == "View Processes":
             window['OUTPUT'].Update('sekrjklsejlkser')
             results = client.view_processes()
             print(results)
             window['OUTPUT'].update(value=results)
+
         elif event == "View Apps":
             window['OUTPUT'].Update('')
             results = client.view_apps()
             print(results)
             window['OUTPUT'].update(value=results)
+
         elif event == "Kill Process":
             print(value[0])
             client.kill_process(value[0])
@@ -86,6 +90,7 @@ def main():
             window['OUTPUT'].update(value=results)
 
     window.close()
+
 
 
 if __name__ == '__main__':
