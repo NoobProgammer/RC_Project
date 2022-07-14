@@ -23,7 +23,7 @@ FLAG_APPS_END = 'APPS_END'
 BUFFER_SIZE = 1024
 
 # SCREENSHOT
-TMP_PATH = './tmp/'
+TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 
 class Client:

