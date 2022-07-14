@@ -40,8 +40,6 @@ output_layout = [[sg.Text("", size=(800,300),key='OUTPUT')]]
 layout = [[sg.Column(control_layout, element_justification='c'), 
            sg.Column(output_layout, element_justification='c',  scrollable=True,  vertical_scroll_only=True)]]
 
-
-
 def main():
     client = Client()
     client.connect()
@@ -53,17 +51,21 @@ def main():
         event, value = window.read()
 
         if event == "Exit" or event == sg.WIN_CLOSED:
+            client.end_connection()
             break
+
         elif event == "View Processes":
             window['OUTPUT'].Update('sekrjklsejlkser')
             results = client.view_processes()
             print(results)
             window['OUTPUT'].update(value=results)
+
         elif event == "View Apps":
             window['OUTPUT'].Update('')
             results = client.view_apps()
             print(results)
             window['OUTPUT'].update(value=results)
+
         elif event == "Kill Process":
             pass
         elif event == "Start App":

