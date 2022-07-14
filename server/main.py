@@ -10,6 +10,7 @@ def start_server(server):
 
 def stop_server(root):
   # Kill server thread
+  print('[SHUTDOWN] Stopping server...')
   event.set()
   root.destroy()
 

