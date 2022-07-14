@@ -1,11 +1,4 @@
 from client import Client
-<<<<<<< Updated upstream
-
-def main():
-  client = Client()
-  client.connect()
-  client.run()
-=======
 import PySimpleGUI as sg
 
 # GUI Layout
@@ -95,7 +88,6 @@ def main():
 
     window.close()
 
->>>>>>> Stashed changes
 
 if __name__ == '__main__':
   main()
