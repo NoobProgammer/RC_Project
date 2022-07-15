@@ -25,7 +25,7 @@ FLAG_APPS_END = 'APPS_END'
 # BUFFER
 BUFFER_SIZE = 1024
 
-# SCREENSHOT
+# PATH
 TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 
@@ -42,21 +42,24 @@ class Client:
     self.addr = (self.host, self.port)
     is_disconnected = True
     print("[CONNECTING] Connecting to server...")
+    start_time = time.time()
     while is_disconnected:
+      if time.time() - start_time > 10:
+        print("[ERROR] Connection timeout")
+        exit()
       try:
           self.socket.connect(self.addr)
           # self.client.settimeout(None)
           is_disconnected = False
-          print("[SUCCESS] Connected to server")
-      except TimeoutError:
-          print("[ERROR] Connection timeout")
-          exit()
+          print("[SUCCESS] Connected to server") 
       except ConnectionRefusedError:
           pass
       except ConnectionAbortedError:
           pass
-    # Command Line Interface
+      except ConnectionResetError:
+          pass
 
+  # Command Line Interface
   def run(self):
     while True:
       print('''Commands:
@@ -106,6 +109,7 @@ class Client:
         exit()
 
   def save_file(self, path, file_name):
+    start_time = time.time()
     with open(os.path.join(path, file_name), 'wb') as f:
       while True:
         data = self.socket.recv(BUFFER_SIZE)
@@ -157,14 +161,25 @@ class Client:
     return apps
 
   def kill_process(self, pid):
+    if (not pid or not pid.isdigit()):
+      print("[ERROR] PID is empty/invalid")
+      return "PID is empty/invalid"
     self.socket.send(CMD_KILL_PROCESS.encode())
     time.sleep(0.01)
     self.socket.send(str(pid).encode())
+    return "Process/App killed"
 
   def start_app(self, app_name):
+    if (not app_name):
+      print("[ERROR] App name is empty")
+      return "[ERROR] App name is empty"
     self.socket.send(CMD_START_APP.encode())
     time.sleep(0.01)
     self.socket.send(app_name.encode())
+    msg = self.recv_msg(FLAG_MSG_END)
+    return msg
 
   def end_connection(self):
     self.socket.send(CMD_END_CONNECTION.encode())
+
+  
