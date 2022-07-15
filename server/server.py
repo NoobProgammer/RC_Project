@@ -69,6 +69,7 @@ class Server:
         # Shutdown
         elif data == CMD_SHUTDOWN.encode():
           print(f'[SHUTDOWN] {addr} requested shutdown.')
+          conn.close()
           self.shutdown(conn, addr)
 
         # Take screenshot
