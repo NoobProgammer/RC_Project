@@ -99,6 +99,8 @@ def main():
         window['OUTPUT'].update(value=results)
 
       elif event == "Take Screenshot":
+        window['OUTPUT'].Update('')
+        window['OUTPUT'].update(value="Taking screenshot...")
         client.take_screenshot()
 
       elif event == "Shutdown":

