@@ -23,9 +23,9 @@ The project is divided into two parts:
 
 ## Prerequisites
 
-1. Make sure you have Python 3.6 or higher installed.
+1. Make sure to have Python 3.6 or higher installed.
 2. Disable Windows Defender (since the project uses keylogging)
-3. You need to install the required libraries located in the _required.txt_ file.
+3. Install the required libraries located in the _required.txt_ file.
 
 Run the following command to install the libraries:
 
