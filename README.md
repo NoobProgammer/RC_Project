@@ -46,7 +46,7 @@ python server.py
 - To run the client, locate to the client folder and run the following command:
 
 ```
-python client.py
+python app.py
 ```
 
 - Keylog and screenshots file will be saved in the _tmp_ folder.
