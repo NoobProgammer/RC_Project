@@ -195,7 +195,7 @@ class Server:
             conn.send(FLAG_FILE_END.encode())
 
     def get_all_processes(self):
-        return os.popen('wmic process get description, processid, threadcount | sort').read()
+        return os.popen('wmic process get description, processid, threadcount').read()
 
     def kill_process(self, pid):
         # os.system(f'TASKKILL /f /t /PID {pid}')
@@ -216,16 +216,6 @@ class Server:
     def get_all_apps(self):
         cmd = 'powershell "gps | where {$_.MainWindowTitle } | select ProcessName, Id'
         return os.popen(cmd).read()
-        # proc = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-        # apps = ""
-        # for line in proc.stdout:
-        #     if line.rstrip():
-        #         # only print lines that are not empty
-        #         # decode() is necessary to get rid of the binary string (b')
-        #         # rstrip() to remove `\r\n`
-        #         apps += line.decode().rstrip()
-        #         apps += "\n"
-        # return apps
 
     def start_app(self, app_name):
         os.startfile(app_name)
