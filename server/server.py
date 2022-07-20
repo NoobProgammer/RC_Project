@@ -3,7 +3,6 @@ import threading
 import os
 import pyautogui
 import time
-import subprocess
 import logging
 from pynput import keyboard
 

