@@ -51,7 +51,7 @@ python app.py
 
 - Keylog and screenshots file will be saved in the _tmp_ folder.
 
-## For non-programmers
+## EXE Build
 
 This project comes with pre-built .exe files for both the server and client.
 
