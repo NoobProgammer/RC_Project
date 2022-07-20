@@ -1,6 +1,7 @@
 import socket
 import os
 import time
+import re
 
 # Commands
 CMD_END_CONNECTION = 'end_connection'
@@ -42,8 +43,11 @@ class Client:
             if not self.is_connected:
                 if host == '' or port == '':
                     return "[ERROR] Host or port is empty/invalid"
-                if not host.isdigit() or not port.isdigit():
-                    return "[ERROR] Host or port is invalid"
+                if not port.isdigit():
+                    return "[ERROR] Port is not a number"
+                pattern = re.compile("\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}")
+                if not pattern.search(host):
+                    return "[ERROR] Host is not a valid IP"
                 if ' ' in host or ' ' in port:
                     return "[ERROR] Host or port is invalid"
 
