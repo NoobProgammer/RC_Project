@@ -80,6 +80,7 @@ class Server:
                         TMP_PATH, 'screenshot.png'))
                     self.send_file(os.path.join(
                         TMP_PATH, 'screenshot.png'), conn)
+                    os.remove(os.path.join(TMP_PATH, 'screenshot.png'))
                     print(f'[SCREENSHOT] {addr} sent screenshot.')
 
                 # View processes
