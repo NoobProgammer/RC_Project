@@ -54,6 +54,9 @@ python app.py
 ## EXE Build
 
 This project comes with pre-built .exe files for both the server and client.
+If run the .exe file, make sure to unblock the file.
+
+![screenshot](https://ik.imagekit.io/ifzn1ow2v/unblock_2i36Bnjdc.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1659275849529)
 
 ## Screenshots
 
