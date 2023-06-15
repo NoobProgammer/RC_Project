@@ -66,6 +66,5 @@ If run the .exe file, make sure to unblock the file in the properties.
 
 Special thanks to the following people for their contributions:
 
-- Nguyen Ho Trung Hieu: 20126038
 - Vu Hoai Nam: 20126045
 - Truong Do Truong Thinh: 20126056
