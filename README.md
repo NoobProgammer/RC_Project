@@ -69,5 +69,5 @@ https://github.com/nhthieu/RC_Project/assets/74890715/bba24bb9-7e10-43a7-84d2-f3
 
 Special thanks to the following people for their contributions:
 
-- Vu Hoai Nam: 20126045
-- Truong Do Truong Thinh: 20126056
+- [Vu Hoai Nam](https://github.com/namhoai1109)
+- [Truong Do Truong Thinh](https://github.com/td2thinh)
