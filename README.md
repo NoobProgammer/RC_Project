@@ -2,6 +2,8 @@
 
 A simple Python application that can manipulate target computer within the same network. This project was done as the final project for the module CSC10008 - Networking at HCMUS.
 
+![screenshot](https://ik.imagekit.io/ifzn1ow2v/rc_screenshot_QWoPmTs0e.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1657960718590)
+
 ## Overview
 
 The project is divided into two parts:
@@ -54,12 +56,6 @@ python app.py
 
 This project comes with pre-built .exe files for both the server and client.
 If run the .exe file, make sure to unblock the file in the properties.
-
-## Screenshots
-
-![screenshot](https://ik.imagekit.io/ifzn1ow2v/rc_screenshot_QWoPmTs0e.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1657960718590)
-
-![screenshot](https://ik.imagekit.io/ifzn1ow2v/rc_server_screenshot_JegqL-NoF.jpg?ik-sdk-version=javascript-1.4.3&updatedAt=1657960950444)
 
 ## Demo
 
