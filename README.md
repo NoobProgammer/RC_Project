@@ -1,8 +1,8 @@
 # Remote Control Project
 
-A simple Python application that can manipulate target computer within the same network. This project was done as part of the course work for the module CSC10008 - Networking at HCMUS.
+A simple Python application that can manipulate target computer within the same network. This project was done as the final project for the module CSC10008 - Networking at HCMUS.
 
-## Folder Structure
+## Overview
 
 The project is divided into two parts:
 
