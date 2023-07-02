@@ -1,4 +1,4 @@
-# Remote Control Project
+# py-rus
 
 A simple Python application that can manipulate target computer within the same network. This project was done as the final project for the module CSC10008 - Networking at HCMUS.
 
